@@ -283,7 +283,7 @@ int main() {
     Gr.print_adj_list();
 
 
-    cout <<"Hello";
+
 //    cout << "start" << endl;
 //    vector<float> density;
 //    vector<float> times;
