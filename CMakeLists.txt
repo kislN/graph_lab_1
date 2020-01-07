@@ -3,4 +3,4 @@ project(lab1_graphs_algo)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(lab1_graphs_algo main.cpp)
+add_executable(lab1_graphs_algo main.cpp compare.cpp)

@@ -276,10 +276,10 @@ int main() {
     Graph Gr(M);
     Gr.generate_rand(0.2);
     vector<vector<UI>> * pnt = find_rand_bridges(Gr, M);
-    for (UI i=0; i<(*pnt).size(); i++){
-
-    }
-//    find_dfs_bridges(&Gr, M);
+//    for (UI i=0; i<(*pnt).size(); i++){
+//
+//    }
+    find_dfs_bridges(&Gr, M);
     Gr.print_adj_list();
 
 
