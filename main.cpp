@@ -1,296 +1,29 @@
 #include <iostream>
 #include <vector>
-#include <set>
 #include <iterator>
 #include <ctime>
 #include <random>
 #include <algorithm>
-
+#include "Graph.h"
+#include "check_bridge.h"
+#include "find_bridges.h"
+#include "weights_sort.h"
 
 using namespace std;
 
 typedef unsigned int UI;  // 4 bytes [0; 4 294 967 295]
 typedef unsigned short US;  // 2 bytes [0; 65 535]
 
-const UI N = 10000;  //number of nodes
-bool used[N];
-UI timer, tin[N], fup[N];
-vector<UI> comp;
-//vector<set<UI>> bridges;
-
 mt19937 gen(time(0));
 uniform_int_distribution<> uid(0, 9999);
 
-class Graph {
-private:
-    UI graph_size;
-    UI edges_num;
-    float edges_dens;
-    vector<vector<UI>> adj_list;
-public:
-    Graph(UI num){
-        graph_size = num;
-        edges_num = 0;
-        edges_dens = 0;
-        for (int i=0; i<graph_size; i++){
-            vector<UI> vec;
-            adj_list.push_back(vec);
-        }
-    }
-
-    void generate_rand(float probabil){
-        UI tolerance = 100000;
-        UI p = probabil * tolerance;
-        for(UI i=0; i<graph_size; i++){
-            for(UI j=i+1; j<graph_size; j++){
-                if (p > (rand() % tolerance)) {
-//                if (p > (uid(gen))){
-                    adj_list[i].push_back(j);
-                    adj_list[j].push_back(i);
-                    edges_num++;
-                }
-            }
-        }
-        edges_dens = edges_num / ((graph_size * (graph_size - 1)) / 2.);
-    }
-
-    bool add_edge(UI a, UI b){
-        for (UI i; i<adj_list[a].size(); i++) {
-            if (b == adj_list[a][i]) return 0;
-        }
-        adj_list[a].push_back(b);
-        adj_list[b].push_back(a);
-        edges_num++;
-        edges_dens = edges_num / ((graph_size * (graph_size - 1)) / 2.);
-        return 1;
-    }
-
-    void delete_edge(UI a, UI b){
-        for (UI i=0; i<adj_list[a].size(); i++){
-            if (b == adj_list[a][i]) adj_list[a].erase(adj_list[a].begin()+i);
-        }
-        for (UI i=0; i<adj_list[b].size(); i++){
-            if (a == adj_list[b][i]) adj_list[b].erase(adj_list[b].begin()+i);
-        }
-        edges_num--;
-        edges_dens = edges_num / ((graph_size * (graph_size - 1)) / 2.);
-    }
-
-    UI get_edges_num(){
-        return edges_num;
-    }
-
-    float get_edges_dens(){
-        return edges_dens;
-    }
-
-    vector<vector<UI>> * get_adj_list(){
-        return &adj_list;
-    }
-
-    bool is_empty(){
-        for (UI i=0; i<graph_size; i++){
-            if (!adj_list[i].empty())
-                return 0;
-        }
-        return 1;
-    }
-
-    void print_adj_list(){
-        if (this->is_empty())
-            cout << "List is empty" << endl;
-        else
-            for (UI i=0; i<graph_size; i++){
-                cout << "vert: " << i << ": ";
-                copy(adj_list[i].begin(), adj_list[i].end(), ostream_iterator<int>(cout," "));
-                cout << endl;
-            }
-    }
-};
-
-void dfs_connected (UI current, vector<vector<UI>> * adj) {
-    used[current] = true;
-    comp.push_back (current);
-    for (UI i=0; i<(*adj)[current].size(); ++i) {
-        UI child = (*adj)[current][i];
-        if (! used[child])
-            dfs_connected (child, adj);
-    }
-}
-
-UI connect_comp(Graph &G) {    //return amount of connected components
-    UI comp_amount = 0;
-    for (UI i=0; i<N; ++i)
-        used[i] = false;
-    for (UI i=0; i<N; ++i)
-        if (! used[i]) {
-            comp_amount++;
-            comp.clear();
-            dfs_connected (i, G.get_adj_list());
-
-            /*cout << "Component:";
-            for (size_t j=0; j<comp.size(); ++j)
-                cout << ' ' << comp[j];
-            cout << endl;*/
-        }
-    return comp_amount;
-}
-
-bool check_one_bridge(Graph &G, UI a, UI b){    //check a-b bridge
-    UI fir_amount_comp = connect_comp(G);
-    G.delete_edge(a, b);
-    UI last_amount_comp = connect_comp(G);
-    G.add_edge(a, b);
-    return last_amount_comp == (fir_amount_comp + 1);
-}
-
-bool check_double_bridge(Graph &G, UI a, UI b, UI c, UI d){    //check a-b bridge
-    UI fir_amount_comp = connect_comp(G);
-    G.delete_edge(a, b);
-    G.delete_edge(c, d);
-    UI last_amount_comp = connect_comp(G);
-    G.add_edge(a, b);
-    G.add_edge(c, d);
-    return last_amount_comp == (fir_amount_comp + 1);
-}
-
-void dfs_bridges (vector<vector<UI>> * adj, vector<vector<UI>> * bridges, vector<bool> * used, UI current, int parent=-1) {
-    (*used)[current] = true;
-    tin[current] = fup[current] = timer++;
-    for (UI i=0; i<(*adj)[current].size(); ++i) {
-        UI child = (*adj)[current][i];
-        if (child == parent)  continue;
-        if ((*used)[child])
-            fup[current] = min (fup[current], tin[child]);
-        else {
-            dfs_bridges (adj, bridges, used, child, current);
-            fup[current] = min (fup[current], fup[child]);
-            if (fup[child] > tin[current]){
-                vector<UI> br_set;
-                br_set.push_back(child);
-                br_set.push_back(current);
-                (*bridges).push_back(br_set);
-                cout << child << " - " << current << endl;
-            }
-        }
-    }
-}
-
-vector<vector<UI>> find_dfs_bridges(Graph * G, UI N) {
-    vector<vector<UI>> bridges;
-    vector<bool> used;
-    timer = 0;
-    for (UI i=0; i<N; ++i)
-        used.push_back(false);
-    for (UI i=0; i<N; ++i) {
-        if (!used[i])
-            dfs_bridges(G->get_adj_list(), &bridges, &used, i);
-    }
-    return bridges;
-
-}
-
-void rand_bridges(  vector<vector<UI>> *adj,
-                    const UI &N,
-                    vector<bool> &used,
-                    vector<vector<bool>> &used_weights,
-                    vector<vector<UI>> &mark_list,
-                    const UI &current,
-                    const UI &parent )
-{
-    used[current] = 1;
-    UI mark = 0;
-    for (UI i=0; i<(*adj)[current].size(); i++){
-        UI child = (*adj)[current][i];
-        if (child == parent) continue;
-        if (used[child]) {
-            if (!used_weights[current][child]){
-                used_weights[current][child] = used_weights[child][current] = 1;
-                mark_list[current][child] = mark_list[child][current] = rand() % 2147483647;    //uid(gen)
-            }
-            mark = mark ^ mark_list[current][child];
-        }
-        else{
-            rand_bridges(adj, N, used, used_weights, mark_list, child, current);
-            mark = mark ^ mark_list[current][child];
-        }
-    }
-    if (parent == N+1) return;
-    mark_list[current][parent] = mark_list[parent][current] = mark;
-    used_weights[current][parent] = used_weights[parent][current] = 1;
-}
-
-void find_rand_bridges(Graph &G, const UI &N, vector<vector<UI>> &list_weights){
-    vector<bool> used(N);
-    vector<vector<bool>> used_weights;
-    vector<vector<UI>> mark_list;
-    for (UI i=0; i<N; i++){
-        vector<UI> vec1;
-        vector<bool> vec2;
-        mark_list.push_back(vec1);
-        used_weights.push_back(vec2);
-        for (UI j=0; j<N; j++){
-            used_weights[i].push_back(0);
-            mark_list[i].push_back(0);            // what should I do with -1 in marks ???
-        }
-    }
-
-    for (UI current=0; current<N; current++) {
-        if (!used[current]) {
-            rand_bridges(G.get_adj_list(), N, used, used_weights, mark_list, current, N + 1);
-        }
-    }
-
-    for (UI i = 0; i < N; i++) {
-        for (UI j = i + 1; j < N; j++) {
-            if (used_weights[i][j] == 1){
-                vector<UI> weight{i, j, mark_list[i][j]};
-                list_weights.push_back(weight);
-            }
-//            if ((mark_list[i][j] == 0) && (used_weights[i][j] == 1)) cout << i << " - " << j << endl;
-        }
-    }
-//    return &list_weights;
-}
-
-void radix_sort(vector<vector<UI>> * vec, vector<vector<UI>> output, size_t n){
-    for (UI i=0; i<4; i++){
-        UI count[256] = {0};
-        UI k = i * 8;
-        for (UI j = 0; j < n; j++)
-        {
-            count[static_cast<uint8_t>(((*vec)[j][2] & (0xff << k)) >> k )]++;
-        }
-
-        for (UI j = 1; j < 256; j++)
-            count[j] += count[j - 1];
-
-        for (UI j = n; j > 0; j--)
-        {
-            uint8_t a = static_cast<uint8_t>(((*vec)[j-1][2] & (0xff << k)) >> k );
-            output[count[a] - 1][0] = (*vec)[j-1][0];
-            output[count[a] - 1][1] = (*vec)[j-1][1];
-            output[count[a] - 1][2] = (*vec)[j-1][2];
-            count[a]--;
-        }
-
-        for (UI j = 0; j < n; j++) {
-            (*vec)[j][0] = output[j][0];
-            (*vec)[j][1] = output[j][1];
-            (*vec)[j][2] = output[j][2];
-        }
-    }
-}
-
-#include <cmath>
-
 
 int main() {
-    UI M = 10000;
+    UI M = 10;
     Graph Gr(M);
-    Gr.generate_rand(0.001);
+    Gr.generate_rand(0.1);
     vector<vector<UI>> wei;
-    find_rand_bridges(Gr, M, wei);
+    find_rand_bridges(Gr, wei);
     cout << Gr.get_edges_num() << endl;
 
 //    for (UI i=0; i<wei.size(); i++){
@@ -300,22 +33,32 @@ int main() {
 //    Gr.print_adj_list();
 
     radix_sort(&wei, wei, wei.size());
+    vector<vector<UI>> sin = find_dfs_bridges(Gr);
+
+    for(UI i=0; i<sin.size(); i++){
+        cout << check_one_bridge(Gr, sin[i][0], sin[i][1]) << endl;
+    }
 //    for (UI i=0; i<wei.size(); i++){
 //        cout << wei[i][0] << " - " << wei[i][1] << ": " << wei[i][2] << endl;
 //    }
-//    cout << "here " << check_double_bridge(Gr, 3, 8, 3, 14) << endl;
+
+    cout << "sdgdg" << endl;
     for (UI i=0; i<wei.size(); i++){
+
         if(wei[i][2]!=0) {
             UI k = 1;
             if (i+k < wei.size()) {
                 while (wei[i][2] == wei[i + k][2]) {
-//                    cout << wei[i][0] << " - " << wei[i][1] << " and " << wei[i + k][0] << " - " << wei[i + k][1] << endl;
+                    cout << wei[i][0] << " - " << wei[i][1] << " and " << wei[i + k][0] << " - " << wei[i + k][1] << endl;
                     cout << check_double_bridge(Gr, wei[i][0], wei[i][1], wei[i + k][0], wei[i + k][1]) << endl;
                     k++;
                     if (i+k >= wei.size()) break;
 
                 }
             }
+        }
+        else{
+            cout << check_one_bridge(Gr, wei[i][0], wei[i][1]) << endl;
         }
     }
 //    cout << "start" << endl;
