@@ -28,11 +28,11 @@ int main() {
         v.push_back(i);
     }
     copy(v.begin(), v.end(), ostream_iterator<UI>(cout," "));
-    bucketSort(&v, v.size());
+    bucket_sort(&v, v.size());
     cout << endl;
     copy(v.begin(), v.end(), ostream_iterator<UI>(cout," "));
 
-    return 0;
+
 
     ofstream outdata("Out.csv");
     outdata << "NumVert,EdgeDens,TimeRadix,TimeSort" << endl;//prompt user for numbers
@@ -40,7 +40,7 @@ int main() {
 
     UI N = 10;
 
-    for (UI i=0; i<150; i++){
+    for (UI i=0; i<10; i++){
         cout << i << " ";
         float p = 0.01;
         for (UI j=0; j<1; j++){
@@ -66,7 +66,7 @@ int main() {
             outdata << N << "," << p << "," << avtime1 / 3000000.0 << "," << avtime2 / 3000000.0 << endl;
             p *= 10;
         }
-        N += 10;
+        N += 1000;
     }
 
     return 0;

@@ -31,7 +31,7 @@ void radix_sort(vector<vector<UI>> * vec, vector<vector<UI>> output, size_t n){
     }
 }
 
-void bucketSort(vector<UI> * vec, size_t n)
+void bucket_sort(vector<UI> * vec, size_t n)
 {
     // 1) Create n empty buckets
     vector<UI> b[n];
