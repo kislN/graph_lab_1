@@ -17,14 +17,59 @@ typedef unsigned short US;  // 2 bytes [0; 65 535]
 mt19937 gen(time(0));
 uniform_int_distribution<> uid(0, 9999);
 
+#include <fstream>
+#include<string>
+#include <iomanip>
 
 int main() {
-    UI M = 10;
-    Graph Gr(M);
-    Gr.generate_rand(0.1);
-    vector<vector<UI>> wei;
-    find_rand_bridges(Gr, wei);
-    cout << Gr.get_edges_num() << endl;
+
+    vector<UI> v;
+    for (UI i=10; i>0; i--){
+        v.push_back(i);
+    }
+    copy(v.begin(), v.end(), ostream_iterator<UI>(cout," "));
+    bucketSort(&v, v.size());
+    cout << endl;
+    copy(v.begin(), v.end(), ostream_iterator<UI>(cout," "));
+
+    return 0;
+
+    ofstream outdata("Out.csv");
+    outdata << "NumVert,EdgeDens,TimeRadix,TimeSort" << endl;//prompt user for numbers
+    cout << "File is open " <<  outdata.is_open() << endl;
+
+    UI N = 10;
+
+    for (UI i=0; i<150; i++){
+        cout << i << " ";
+        float p = 0.01;
+        for (UI j=0; j<1; j++){
+            Graph G(N);
+            G.generate_rand(p);
+            UI avtime1 = 0;
+            UI avtime2 = 0;
+            for (UI k=0; k<3; k++) {
+                UI start_time = clock();
+                vector<vector<UI>> wei;
+                find_rand_bridges(G, wei);
+                avtime1 += (clock() - start_time);
+                avtime2 += (clock() - start_time);
+                vector<vector<UI>> wei2 = wei;
+                start_time = clock();
+                radix_sort(&wei, wei, wei.size());
+                avtime1 += (clock() - start_time);
+                start_time = clock();
+                sort(wei2.begin(), wei2.end(), comp);
+                avtime2 += (clock() - start_time);
+
+            }
+            outdata << N << "," << p << "," << avtime1 / 3000000.0 << "," << avtime2 / 3000000.0 << endl;
+            p *= 10;
+        }
+        N += 10;
+    }
+
+    return 0;
 
 //    for (UI i=0; i<wei.size(); i++){
 //        cout << wei[i][0] << " - " << wei[i][1] << ": " << wei[i][2] << endl;
@@ -32,35 +77,35 @@ int main() {
 //    find_dfs_bridges(&Gr, M);
 //    Gr.print_adj_list();
 
-    radix_sort(&wei, wei, wei.size());
-    vector<vector<UI>> sin = find_dfs_bridges(Gr);
 
-    for(UI i=0; i<sin.size(); i++){
-        cout << check_one_bridge(Gr, sin[i][0], sin[i][1]) << endl;
-    }
+//    vector<vector<UI>> sin = find_dfs_bridges(Gr);
+
+//    for(UI i=0; i<sin.size(); i++){
+//        cout << check_one_bridge(Gr, sin[i][0], sin[i][1]) << endl;
+//    }
 //    for (UI i=0; i<wei.size(); i++){
 //        cout << wei[i][0] << " - " << wei[i][1] << ": " << wei[i][2] << endl;
 //    }
 
-    cout << "sdgdg" << endl;
-    for (UI i=0; i<wei.size(); i++){
-
-        if(wei[i][2]!=0) {
-            UI k = 1;
-            if (i+k < wei.size()) {
-                while (wei[i][2] == wei[i + k][2]) {
-                    cout << wei[i][0] << " - " << wei[i][1] << " and " << wei[i + k][0] << " - " << wei[i + k][1] << endl;
-                    cout << check_double_bridge(Gr, wei[i][0], wei[i][1], wei[i + k][0], wei[i + k][1]) << endl;
-                    k++;
-                    if (i+k >= wei.size()) break;
-
-                }
-            }
-        }
-        else{
-            cout << check_one_bridge(Gr, wei[i][0], wei[i][1]) << endl;
-        }
-    }
+//    cout << "sdgdg" << endl;
+//    for (UI i=0; i<wei.size(); i++){
+//
+//        if(wei[i][2]!=0) {
+//            UI k = 1;
+//            if (i+k < wei.size()) {
+//                while (wei[i][2] == wei[i + k][2]) {
+//                    cout << wei[i][0] << " - " << wei[i][1] << " and " << wei[i + k][0] << " - " << wei[i + k][1] << endl;
+//                    cout << check_double_bridge(Gr, wei[i][0], wei[i][1], wei[i + k][0], wei[i + k][1]) << endl;
+//                    k++;
+//                    if (i+k >= wei.size()) break;
+//
+//                }
+//            }
+//        }
+//        else{
+//            cout << check_one_bridge(Gr, wei[i][0], wei[i][1]) << endl;
+//        }
+//    }
 //    cout << "start" << endl;
 //    vector<float> density;
 //    vector<float> times;

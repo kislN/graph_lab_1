@@ -31,27 +31,31 @@ void radix_sort(vector<vector<UI>> * vec, vector<vector<UI>> output, size_t n){
     }
 }
 
-void bucketSort(vector<int> * vec, size_t n)
+void bucketSort(vector<UI> * vec, size_t n)
 {
     // 1) Create n empty buckets
-    vector<int> b[n];
+    vector<UI> b[n];
 
     // 2) Put array elements in different buckets
-    for (int i=0; i<n; i++)
+    for (UI i=0; i<n; i++)
     {
-        int bi = n*((*vec)[i]/2147483647); // Index in bucket
+        UI bi = n*((*vec)[i]/2147483647); // Index in bucket
         b[bi].push_back((*vec)[i]);
     }
 
     // 3) Sort individual buckets
-    for (int i=0; i<n; i++)
+    for (UI i=0; i<n; i++)
         sort(b[i].begin(), b[i].end());
 
     // 4) Concatenate all buckets into arr[]
-    int index = 0;
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < b[i].size(); j++)
+    UI index = 0;
+    for (UI i = 0; i < n; i++)
+        for (UI j = 0; j < b[i].size(); j++)
             (*vec)[index++] = b[i][j];
+}
+
+bool comp(vector<UI> a, vector<UI> b){
+    return a[2] < b[2];
 }
 
 #endif //LAB1_GRAPHS_ALGO_WEIGHTS_SORT_H
