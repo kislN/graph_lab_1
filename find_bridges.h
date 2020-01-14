@@ -32,9 +32,8 @@ void dfs_bridges (  vector<vector<UI>> *adj,
     }
 }
 
-vector<vector<UI>> find_dfs_bridges(Graph &G) {
+void find_dfs_bridges(Graph &G, vector<vector<UI>> &bridges) {
     UI N = G.get_graph_size();
-    vector<vector<UI>> bridges;
     vector<bool> used(N);
     vector<UI> tin(N);
     vector<UI> fup(N);
@@ -43,8 +42,6 @@ vector<vector<UI>> find_dfs_bridges(Graph &G) {
         if (!used[i])
             dfs_bridges(G.get_adj_list(), bridges, used, timer, tin, fup, i, N+1);
     }
-    return bridges;
-
 }
 
 void rand_bridges(  vector<vector<UI>> *adj,

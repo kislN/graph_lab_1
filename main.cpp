@@ -13,32 +13,57 @@ using namespace std;
 
 typedef unsigned int UI;  // 4 bytes [0; 4 294 967 295]
 typedef unsigned short US;  // 2 bytes [0; 65 535]
+typedef unsigned char UC;  // 1 byte [0; 255]
 
 mt19937 gen(time(0));
-uniform_int_distribution<> uid(0, 9999);
+uniform_int_distribution<> uid(0, 4294967295);
 
 #include <fstream>
 #include<string>
 #include <iomanip>
 
+
+
 int main() {
 
-    vector<UI> v;
-    for (UI i=10; i>0; i--){
-        v.push_back(i);
-    }
-    copy(v.begin(), v.end(), ostream_iterator<UI>(cout," "));
-    bucket_sort(&v, v.size());
-    cout << endl;
-    copy(v.begin(), v.end(), ostream_iterator<UI>(cout," "));
 
 
 
     ofstream outdata("Out.csv");
-    outdata << "NumVert,EdgeDens,TimeRadix,TimeSort" << endl;//prompt user for numbers
+    outdata << "NumVert,EdgeDens,DFS,Rand" << endl;//prompt user for numbers
     cout << "File is open " <<  outdata.is_open() << endl;
 
     UI N = 10;
+
+    for (UI i=0; i<10; i++){
+        cout << i << " ";
+        float p = 0.01;
+        for (UI j=0; j<1; j++){
+            Graph G(N);
+            G.generate_rand(p);
+            UI avtime1 = 0;
+            UI avtime2 = 0;
+            for (UI k=0; k<1; k++) {
+                UI start_time = clock();
+                vector<vector<UI>> wei;
+                find_dfs_bridges(G, wei);
+                avtime1 += (clock() - start_time);
+                start_time = clock();
+                vector<vector<UI>> wei2;
+                find_rand_bridges(G, wei2);
+                avtime2 += (clock() - start_time);
+
+            }
+            outdata << N << "," << p << "," << avtime1 / 1000000.0 << "," << avtime2 / 1000000.0 << endl;
+            p *= 10;
+        }
+        N += 10;
+    }
+
+
+    return 0;
+
+
 
     for (UI i=0; i<10; i++){
         cout << i << " ";
@@ -56,7 +81,7 @@ int main() {
                 avtime2 += (clock() - start_time);
                 vector<vector<UI>> wei2 = wei;
                 start_time = clock();
-                radix_sort(&wei, wei, wei.size());
+                radix_sort(wei);
                 avtime1 += (clock() - start_time);
                 start_time = clock();
                 sort(wei2.begin(), wei2.end(), comp);
