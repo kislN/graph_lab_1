@@ -26,6 +26,33 @@ uniform_int_distribution<> uid(0, 4294967295);
 
 int main() {
 
+//    Graph G(10);
+//    G.generate_rand(0.3);
+////    G.print_with_weights();
+//
+//
+//    cout << G.get_graph_size() << " " << G.get_edges_num() << " " << G.get_edges_dens() << endl;
+////    G.add_edge(7,6);
+////    G.add_edge(2,7);
+////    G.delete_edge(6,4);
+////    G.print_adj_list();
+//
+////    cout << connect_comp(G) << endl;
+//    cout << endl;
+//    find_rand_bridges(G);
+//    cout << "rand done" << endl;
+//    G.print_with_weights();
+//
+//    vector<UI> br;
+//    find_dfs_bridges(G, br);
+//
+//    for (UI i=0; i<br.size()-1; i+=2){
+//        cout << br[i] << " - " << br[i+1] << endl;
+//    }
+
+
+
+
 
 
 
@@ -35,66 +62,72 @@ int main() {
 
     UI N = 10;
 
-    for (UI i=0; i<10; i++){
-        cout << i << " ";
-        float p = 0.01;
+    for (UI i=0; i<5; i++){
+        UI M = N;
+        float p = M/((N*(N-1))/2.);
+        cout << p << endl;
         for (UI j=0; j<1; j++){
-            Graph G(N);
-            G.generate_rand(p);
+            cout << i << " Creating" << endl;
+            Graph Gr(N);
+            Gr.generate_rand(p);
+            cout << "Done" << endl;
             UI avtime1 = 0;
             UI avtime2 = 0;
             for (UI k=0; k<1; k++) {
                 UI start_time = clock();
-                vector<vector<UI>> wei;
-                find_dfs_bridges(G, wei);
+                cout << "Dfs" << endl;
+                vector<UI> bri;
+                find_dfs_bridges(Gr, bri);
+                cout << "Done" << endl;
                 avtime1 += (clock() - start_time);
                 start_time = clock();
-                vector<vector<UI>> wei2;
-                find_rand_bridges(G, wei2);
+                cout << "Rand" << endl;
+                find_rand_bridges(Gr);
+                cout << "Done" << endl;
                 avtime2 += (clock() - start_time);
 
             }
             outdata << N << "," << p << "," << avtime1 / 1000000.0 << "," << avtime2 / 1000000.0 << endl;
             p *= 10;
         }
-        N += 10;
-    }
-
-
-    return 0;
-
-
-
-    for (UI i=0; i<10; i++){
-        cout << i << " ";
-        float p = 0.01;
-        for (UI j=0; j<1; j++){
-            Graph G(N);
-            G.generate_rand(p);
-            UI avtime1 = 0;
-            UI avtime2 = 0;
-            for (UI k=0; k<3; k++) {
-                UI start_time = clock();
-                vector<vector<UI>> wei;
-                find_rand_bridges(G, wei);
-                avtime1 += (clock() - start_time);
-                avtime2 += (clock() - start_time);
-                vector<vector<UI>> wei2 = wei;
-                start_time = clock();
-                radix_sort(wei);
-                avtime1 += (clock() - start_time);
-                start_time = clock();
-                sort(wei2.begin(), wei2.end(), comp);
-                avtime2 += (clock() - start_time);
-
-            }
-            outdata << N << "," << p << "," << avtime1 / 3000000.0 << "," << avtime2 / 3000000.0 << endl;
-            p *= 10;
-        }
         N += 1000;
     }
 
+
     return 0;
+
+//
+//
+//    for (UI i=0; i<10; i++){
+//        cout << i << " ";
+//        float p = 0.01;
+//        for (UI j=0; j<1; j++){
+//            Graph G(N);
+//            G.generate_rand(p);
+//            UI avtime1 = 0;
+//            UI avtime2 = 0;
+//            for (UI k=0; k<3; k++) {
+//                UI start_time = clock();
+//                vector<vector<UI>> wei;
+////                find_rand_bridges(G, wei);
+//                avtime1 += (clock() - start_time);
+//                avtime2 += (clock() - start_time);
+//                vector<vector<UI>> wei2 = wei;
+//                start_time = clock();
+//                radix_sort(wei);
+//                avtime1 += (clock() - start_time);
+//                start_time = clock();
+//                sort(wei2.begin(), wei2.end(), comp);
+//                avtime2 += (clock() - start_time);
+//
+//            }
+//            outdata << N << "," << p << "," << avtime1 / 3000000.0 << "," << avtime2 / 3000000.0 << endl;
+//            p *= 10;
+//        }
+//        N += 1000;
+//    }
+//
+//    return 0;
 
 //    for (UI i=0; i<wei.size(); i++){
 //        cout << wei[i][0] << " - " << wei[i][1] << ": " << wei[i][2] << endl;
