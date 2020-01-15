@@ -11,6 +11,7 @@ private:
     UI graph_size;
     UI edges_num;
     float edges_dens;
+    vector<vector<UI>> edges_list;
     vector<vector<vector<UI>>> adj_list;
 public:
     Graph(UI num){
@@ -30,11 +31,9 @@ public:
             for(UI j=i+1; j<graph_size; j++){
                 if (p > (rand() % tolerance)) {
 //                if (p > (uid(gen))){
-                    adj_list[i].push_back(vector<UI>{j});
-                    adj_list[j].push_back(vector<UI>{i});
-                    adj_list[i][adj_list[i].size()-1].push_back(adj_list[j].size()-1);
-                    adj_list[j][adj_list[j].size()-1].push_back(adj_list[i].size()-1);
-
+                    edges_list.push_back(vector<UI>{i, j});
+                    adj_list[i].push_back(vector<UI>{j, edges_num});
+                    adj_list[j].push_back(vector<UI>{i, edges_num});
                     edges_num++;
                 }
             }
@@ -43,13 +42,14 @@ public:
     }
 
     bool add_edge(UI a, UI b){
+        if((a==b) || (a>=graph_size) || (b>=graph_size)) return 0;
         for (UI i; i<adj_list[a].size(); i++) {
             if (b == adj_list[a][i][0]) return 0;
         }
-        adj_list[a].push_back(vector<UI>{b});
-        adj_list[b].push_back(vector<UI>{a});
-        adj_list[a][adj_list[a].size()-1].push_back(adj_list[b].size()-1);
-        adj_list[b][adj_list[b].size()-1].push_back(adj_list[a].size()-1);
+        edges_list.push_back(vector<UI>{min(a,b), max(a,b)});                         //// ATTENTION we dont add edge to edges_list
+                                                                                        //// because we didnt remove edge from
+        adj_list[a].push_back(vector<UI>{b, edges_num});
+        adj_list[b].push_back(vector<UI>{a, edges_num});
         edges_num++;
         edges_dens = edges_num / ((graph_size * (graph_size - 1)) / 2.);
         return 1;
@@ -57,7 +57,11 @@ public:
 
     void delete_edge(UI a, UI b){
         for (UI i=0; i<adj_list[a].size(); i++){
-            if (b == adj_list[a][i][0]) adj_list[a].erase(adj_list[a].begin()+i);  //улучшить
+            if (b == adj_list[a][i][0]) {
+                edges_list.erase(edges_list.begin() + adj_list[a][i][1]);
+                adj_list[a].erase(adj_list[a].begin()+i);
+
+            }
         }
         for (UI i=0; i<adj_list[b].size(); i++){
             if (a == adj_list[b][i][0]) adj_list[b].erase(adj_list[b].begin()+i);
@@ -78,8 +82,12 @@ public:
         return edges_dens;
     }
 
-    vector<vector<vector<UI>>> * get_adj_list(){
-        return &adj_list;
+    vector<vector<vector<UI>>> & get_adj_list(){
+        return adj_list;
+    }
+
+    vector<vector<UI>> & get_edges_list(){
+        return edges_list;
     }
 
     bool is_empty(){
@@ -98,13 +106,24 @@ public:
                 cout << "vert " << i << ": ";
 //                copy(adj_list[i].begin(), adj_list[i].end(), ostream_iterator<UI>(cout," "));
                 for(UI j=0; j<adj_list[i].size(); j++){
-                    cout << "(" << adj_list[i][j][0] << ", " << adj_list[i][j][1] << ") " ;
+                    cout << adj_list[i][j][0] << " " ;
                 }
                 cout << endl;
             }
     }
 
-    void print_with_weights(){
+    void print_edges_list(){
+        if (this->is_empty())
+            cout << "List is empty" << endl;
+        else {
+            for (UI i=0; i<edges_num; i++){
+               copy(edges_list[i].begin(), edges_list[i].end(), ostream_iterator<UI>(cout," "));
+               cout << endl;
+            }
+        }
+    }
+
+    void print_adj_with_index(){
         if (this->is_empty())
             cout << "List is empty" << endl;
         else
@@ -112,11 +131,7 @@ public:
                 cout << "vert " << i << ": ";
 //                copy(adj_list[i].begin(), adj_list[i].end(), ostream_iterator<UI>(cout," "));
                 for(UI j=0; j<adj_list[i].size(); j++){
-                    if (adj_list[i][j].size() < 3) {
-                        cout << "No weights" << endl;
-                        return;
-                    }
-                    cout << "(" << adj_list[i][j][0] << ", " << adj_list[i][j][1] << ", " << adj_list[i][j][2] << ") " ;
+                    cout << "(" << adj_list[i][j][0] << ", " << adj_list[i][j][1] << ") " ;
                 }
                 cout << endl;
             }

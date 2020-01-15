@@ -26,32 +26,66 @@ uniform_int_distribution<> uid(0, 4294967295);
 
 int main() {
 
-//    Graph G(10);
-//    G.generate_rand(0.3);
-////    G.print_with_weights();
+    Graph G(10);
+    G.generate_rand(0.1);
+
+
+
+    cout << G.get_graph_size() << " " << G.get_edges_num() << " " << G.get_edges_dens() << endl;
+    cout << "conn_comp " << connect_comp(G) << endl;
+//    G.add_edge(7,6);
+//    G.add_edge(2,7);
+//    G.delete_edge(6,4);
+    G.print_adj_list();
+
+//    G.print_edges_list();
+
+//    G.print_adj_with_index();
+
+
+    vector<UI> br;
+    find_dfs_bridges(G, br);
+
+    if(br.size()){
+    for (UI i=0; i<br.size()-1; i+=2){
+//        cout << br[i] << " - " << br[i+1] << " : " << check_one_bridge(G, br[i], br[i+1]) << endl;
+    }}
+
+    find_rand_bridges(G);
+
+    G.print_edges_list();
+
+    vector<vector<UI>> weights = G.get_edges_list();                //copy vec to vec, not link
+//    radix_sort(G.get_edges_list());
+//    bucket_sort(G.get_edges_list(), 3);
+    sort(weights.begin(), weights.end(), comp);
+
+//    G.print_edges_list();
+
+
+
+return 0;
+
+
+//    cout << "sdgdg" << endl;
+//    for (UI i=0; i<wei.size(); i++){
 //
+//        if(wei[i][2]!=0) {
+//            UI k = 1;
+//            if (i+k < wei.size()) {
+//                while (wei[i][2] == wei[i + k][2]) {
+//                    cout << wei[i][0] << " - " << wei[i][1] << " and " << wei[i + k][0] << " - " << wei[i + k][1] << endl;
+//                    cout << check_double_bridge(Gr, wei[i][0], wei[i][1], wei[i + k][0], wei[i + k][1]) << endl;
+//                    k++;
+//                    if (i+k >= wei.size()) break;
 //
-//    cout << G.get_graph_size() << " " << G.get_edges_num() << " " << G.get_edges_dens() << endl;
-////    G.add_edge(7,6);
-////    G.add_edge(2,7);
-////    G.delete_edge(6,4);
-////    G.print_adj_list();
-//
-////    cout << connect_comp(G) << endl;
-//    cout << endl;
-//    find_rand_bridges(G);
-//    cout << "rand done" << endl;
-//    G.print_with_weights();
-//
-//    vector<UI> br;
-//    find_dfs_bridges(G, br);
-//
-//    for (UI i=0; i<br.size()-1; i+=2){
-//        cout << br[i] << " - " << br[i+1] << endl;
+//                }
+//            }
+//        }
+//        else{
+//            cout << check_one_bridge(Gr, wei[i][0], wei[i][1]) << endl;
+//        }
 //    }
-
-
-
 
 
 
@@ -60,9 +94,9 @@ int main() {
     outdata << "NumVert,EdgeDens,DFS,Rand" << endl;//prompt user for numbers
     cout << "File is open " <<  outdata.is_open() << endl;
 
-    UI N = 10;
+    UI N = 1000;
 
-    for (UI i=0; i<5; i++){
+    for (UI i=0; i<3; i++){
         UI M = N;
         float p = M/((N*(N-1))/2.);
         cout << p << endl;
@@ -82,6 +116,7 @@ int main() {
                 avtime1 += (clock() - start_time);
                 start_time = clock();
                 cout << "Rand" << endl;
+                vector<vector<UI>> wei;
                 find_rand_bridges(Gr);
                 cout << "Done" << endl;
                 avtime2 += (clock() - start_time);
@@ -90,7 +125,7 @@ int main() {
             outdata << N << "," << p << "," << avtime1 / 1000000.0 << "," << avtime2 / 1000000.0 << endl;
             p *= 10;
         }
-        N += 1000;
+        N += 20000;
     }
 
 
