@@ -12,7 +12,8 @@ void dfs_connected (UI &current, vector<vector<vector<UI>>> & adj, vector<bool> 
     }
 }
 
-UI connect_comp(Graph &G) {    //return amount of connected components
+template <typename T>
+UI connect_comp(Graph<T> &G) {    //return amount of connected components
     UI N = G.get_graph_size();
     UI comp_amount = 0;
     vector<bool> used(N);
@@ -31,7 +32,8 @@ UI connect_comp(Graph &G) {    //return amount of connected components
     return comp_amount;
 }
 
-bool check_one_bridge(Graph &G, UI a, UI b){    //check a-b bridge
+template <typename T>
+bool check_one_bridge(Graph<T> &G, UI a, UI b){    //check a-b bridge
     UI fir_amount_comp = connect_comp(G);
     G.delete_edge(a, b);
     UI last_amount_comp = connect_comp(G);
@@ -39,7 +41,8 @@ bool check_one_bridge(Graph &G, UI a, UI b){    //check a-b bridge
     return last_amount_comp == (fir_amount_comp + 1);
 }
 
-bool check_double_bridge(Graph &G, UI a, UI b, UI c, UI d){
+template <typename T>
+bool check_double_bridge(Graph<T> &G, UI a, UI b, UI c, UI d){
     UI fir_amount_comp = connect_comp(G);
     G.delete_edge(a, b);
     G.delete_edge(c, d);

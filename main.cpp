@@ -1,135 +1,171 @@
 #include <iostream>
 #include <vector>
+#include <fstream>
+#include <string>
+#include <iomanip>
+#include <sstream>
 #include <iterator>
+#include <algorithm>
 #include <ctime>
 #include <random>
-#include <algorithm>
+
+using namespace std;
+typedef uint64_t UL;        // 8 bytes [0; 18 446 744 073 709 551 615]
+typedef unsigned int UI;    // 4 bytes [0; 4 294 967 295]
+typedef unsigned short US;  // 2 bytes [0; 65 535]
+typedef uint8_t UC;   // 1 byte [0; 255] don't use because it's a character type (like unsigned char)
+
+mt19937 gen(time(0));
+
+
 #include "Graph.h"
 #include "check_bridge.h"
 #include "find_bridges.h"
 #include "weights_sort.h"
-
-using namespace std;
-
-typedef unsigned int UI;  // 4 bytes [0; 4 294 967 295]
-typedef unsigned short US;  // 2 bytes [0; 65 535]
-typedef unsigned char UC;  // 1 byte [0; 255]
-
-mt19937 gen(time(0));
-uniform_int_distribution<> uid(0, 4294967295);
-
-#include <fstream>
-#include<string>
-#include <iomanip>
+#include "real_graph.h"
+#include "stress_tests.h"
+#include <cmath>
+#include <limits>
 
 
 
 int main() {
-
-    Graph G(10);
-    G.generate_rand(0.1);
-
+    Graph<UI> NY_graph(264346);
+    create_NY_graph(NY_graph);
 
 
-    cout << G.get_graph_size() << " " << G.get_edges_num() << " " << G.get_edges_dens() << endl;
-    cout << "conn_comp " << connect_comp(G) << endl;
-//    G.add_edge(7,6);
-//    G.add_edge(2,7);
-//    G.delete_edge(6,4);
+
+    UI N = 20;
+    Graph<US> G(N);
+    G.generate_rand(0.2);
+
+    cout << "Graph_size = " << G.get_graph_size() << endl <<
+    "Edges_num = " << G.get_edges_num() << endl << "Edges_dens = " << G.get_edges_dens() << endl;
+
+    cout << "Connect_num = " << connect_comp(G) << endl;
+
     G.print_adj_list();
-
+//    G.print_adj_with_index();
 //    G.print_edges_list();
 
-//    G.print_adj_with_index();
-
+    G.print_adj_with_index();
+    G.print_edges_list();
 
     vector<UI> br;
     find_dfs_bridges(G, br);
-
-    if(br.size()){
-    for (UI i=0; i<br.size()-1; i+=2){
-//        cout << br[i] << " - " << br[i+1] << " : " << check_one_bridge(G, br[i], br[i+1]) << endl;
-    }}
+    copy(br.begin(), br.end(), ostream_iterator<UI>(cout," "));
 
     find_rand_bridges(G);
-
+    cout << endl;
+    vector<EDGE<US>> &w = G.get_edges_list();
+    bucket_sort(w, 3);
     G.print_edges_list();
 
-    vector<vector<UI>> weights = G.get_edges_list();                //copy vec to vec, not link
-//    radix_sort(G.get_edges_list());
-//    bucket_sort(G.get_edges_list(), 3);
-    sort(weights.begin(), weights.end(), comp);
-
-//    G.print_edges_list();
 
 
-
-return 0;
-
-
-//    cout << "sdgdg" << endl;
-//    for (UI i=0; i<wei.size(); i++){
+//    cout << stress_for_dfs() << endl;
+//    cout << stress_for_rand() << endl;
 //
-//        if(wei[i][2]!=0) {
-//            UI k = 1;
-//            if (i+k < wei.size()) {
-//                while (wei[i][2] == wei[i + k][2]) {
-//                    cout << wei[i][0] << " - " << wei[i][1] << " and " << wei[i + k][0] << " - " << wei[i + k][1] << endl;
-//                    cout << check_double_bridge(Gr, wei[i][0], wei[i][1], wei[i + k][0], wei[i + k][1]) << endl;
-//                    k++;
-//                    if (i+k >= wei.size()) break;
+//    ofstream outdata("Out.csv");
+//    outdata << "NumVert,DFS,Rand,Rand_Radix,Rand_Bucket,Rand_Sort" << endl;
+//    cout << "File is open " <<  outdata.is_open() << endl;
 //
-//                }
-//            }
+//
+//    UI N = 100;
+//    UI k = 1;
+//    for (UI i=0; i<14; i++){
+//        UI M = 0;
+//        float p = M/((N*(N-1))/2.);
+//        cout << i << " " << p << endl;
+//        UI avtime1 = 0;
+//        UI avtime2 = 0;
+//        UI avtime3 = 0;
+//        UI avtime4 = 0;
+//        UI avtime5 = 0;
+//        for (UI j=0; j<k; j++){
+//            Graph Gr(N+1);
+//            Gr.generate_rand(p);
+//
+//            UI start_time = clock();
+//            vector<UI> bri;
+//            find_dfs_bridges(Gr, bri);
+//            avtime1 += (clock() - start_time);
+//
+//            start_time = clock();
+//            vector<UI> bri2;
+//            find_rand_bridges(Gr, bri2);
+//            avtime2 += (clock() - start_time);
+//
+//            vector<vector<UI>> wei1 = Gr.get_edges_list();
+//            vector<vector<UI>> wei2 = wei1;
+//            vector<vector<UI>> wei3 = wei1;
+//
+//            start_time = clock();
+//            radix_sort(wei1);
+//            avtime3 += (clock() - start_time) + avtime2;
+//
+//            start_time = clock();
+////        bucket_sort(wei2, wei2.size()/20);
+//            avtime4 += (clock() - start_time) + avtime2;
+//
+//            start_time = clock();
+//            sort(wei3.begin(), wei3.end(), comp);
+//            avtime5 += (clock() - start_time) + avtime2;
 //        }
-//        else{
-//            cout << check_one_bridge(Gr, wei[i][0], wei[i][1]) << endl;
-//        }
+//
+//        outdata << N << "," << avtime1 / k*1000000.0 << "," << avtime2 / k*1000000.0 << "," << avtime3 / k*1000000.0 << "," << avtime4 / k*1000000.0 << "," << avtime5 / k*1000000.0 <<  endl;
+//
+//        N += 2000;
+//
+//
+//    }
+
+    return 0;
+
+//    ofstream outdata("Out.csv");
+//    outdata << "NumVert,DFS,Rand,Rand_Radix,Rand_Bucket,Rand_Sort" << endl;//prompt user for numbers
+//    cout << "File is open " <<  outdata.is_open() << endl;
+//
+//    UI N = 1000;
+
+//    for (UI i=0; i<30; i++){
+//        UI M = N;
+//        float p = M/((N*(N-1))/2.);
+//        cout << p << endl;
+//        Graph Gr(N);
+//        Gr.generate_rand(p);
+//        UI avtime1 = 0;
+//        UI avtime2 = 0;
+//        UI avtime3 = 0;
+//        UI avtime4 = 0;
+//        UI avtime5 = 0;
+//        UI start_time = clock();
+//        vector<UI> bri;
+//        find_dfs_bridges(Gr, bri);
+//        avtime1 += (clock() - start_time);
+//
+//        start_time = clock();
+////        find_rand_bridges(Gr);
+//        avtime2 += (clock() - start_time);
+//        vector<vector<UI>> wei1 = Gr.get_edges_list();
+//        vector<vector<UI>> wei2 = wei1;
+//        vector<vector<UI>> wei3 = wei1;
+//        start_time = clock();
+//        radix_sort(wei1);
+//        avtime3 += (clock() - start_time) + avtime2;
+//        start_time = clock();
+////        bucket_sort(wei2, wei2.size()/20);
+//        avtime4 += (clock() - start_time) + avtime2;
+//        start_time = clock();
+//        sort(wei3.begin(), wei3.end(), comp);
+//        avtime5 += (clock() - start_time) + avtime2;
+//
+//        outdata << N << "," << avtime1 / 1000000.0 << "," << avtime2 / 1000000.0 << "," << avtime3 / 1000000.0 << "," << avtime4 / 1000000.0 << "," << avtime5 / 1000000.0 <<  endl;
+//        N += 1000;
 //    }
 
 
 
-
-    ofstream outdata("Out.csv");
-    outdata << "NumVert,EdgeDens,DFS,Rand" << endl;//prompt user for numbers
-    cout << "File is open " <<  outdata.is_open() << endl;
-
-    UI N = 1000;
-
-    for (UI i=0; i<3; i++){
-        UI M = N;
-        float p = M/((N*(N-1))/2.);
-        cout << p << endl;
-        for (UI j=0; j<1; j++){
-            cout << i << " Creating" << endl;
-            Graph Gr(N);
-            Gr.generate_rand(p);
-            cout << "Done" << endl;
-            UI avtime1 = 0;
-            UI avtime2 = 0;
-            for (UI k=0; k<1; k++) {
-                UI start_time = clock();
-                cout << "Dfs" << endl;
-                vector<UI> bri;
-                find_dfs_bridges(Gr, bri);
-                cout << "Done" << endl;
-                avtime1 += (clock() - start_time);
-                start_time = clock();
-                cout << "Rand" << endl;
-                vector<vector<UI>> wei;
-                find_rand_bridges(Gr);
-                cout << "Done" << endl;
-                avtime2 += (clock() - start_time);
-
-            }
-            outdata << N << "," << p << "," << avtime1 / 1000000.0 << "," << avtime2 / 1000000.0 << endl;
-            p *= 10;
-        }
-        N += 20000;
-    }
-
-
-    return 0;
 
 //
 //
@@ -218,44 +254,7 @@ return 0;
 //        times.push_back((clock() - start_time) / 1000000.0 );
 //    }
 
-//    Graph G(M);
-//    G.generate_rand(0.03);
-//
-//    start_time = clock();
-//    vector<int> marks = find_rand_bridges(&G, M);
-//    sort(marks.begin(), marks.end());
-//    cout << "\n" << (clock() - start_time) / 1000000.0  << endl;
-//
-//    start_time = clock();
-//    vector<int> marks1 = find_rand_bridges(&G, M);
-//    cout << endl;
-//    radix_sort(&marks1, marks1, marks1.size());
-//    cout << "\n" << (clock() - start_time) / 1000000.0  << endl;
 
-//    start_time = clock();
-//    //G.print_adj_list();
-//    //cout << "edg: " << G.get_edges_num() << endl;
-//    cout << connect_comp(&G) << endl;
-//    cout << "done too" << endl;
-//    cout << (clock() - start_time)/1000000.0 << endl;
-//    start_time = clock();
-//    //G.add_edge(4,1);
-//    //G.print_adj_list();
-//    //connect_comp(&G);
-//   // find_dfs_bridges(&G);
-//    find_rand_bridges(&G);
-//
-//    cout << "research is done" << endl;
-//    cout << (clock() - start_time)/1000000.0 << endl;
-//    start_time = clock();
-//    cout << "k " << k << endl;
-//    for (int i=0; i<N; i++){
-//        for (int j=i+1; j<N; j++){
-//            if (mark_list[i][j] == 0)
-//                cout << check_bridge(&G, i, j) << endl;
-//        }
-//    }
-//    cout << (clock() - start_time)/1000000.0 << endl;
-//    cout << "runtime = " << clock()/1000000.0 << endl;
-//    return 0;
+
+
 }

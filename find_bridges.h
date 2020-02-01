@@ -2,7 +2,6 @@
 #ifndef LAB1_GRAPHS_ALGO_FIND_BRIDGES_H
 #define LAB1_GRAPHS_ALGO_FIND_BRIDGES_H
 
-
 void dfs_bridges (  vector<vector<vector<UI>>> &adj,
                     vector<UI>  &bridges,
                     vector<bool> &used,
@@ -26,34 +25,37 @@ void dfs_bridges (  vector<vector<vector<UI>>> &adj,
             if (fup[child] > tin[current]){
                 bridges.push_back(child);
                 bridges.push_back(current);
-//                cout << child << " - " << current << endl;
             }
         }
     }
 }
 
-void find_dfs_bridges(Graph &G, vector<UI> &bridges) {
+template <typename T>
+void find_dfs_bridges(Graph<T> &G, vector<UI> &bridges) {
     UI N = G.get_graph_size();
     vector<bool> used(N);
     vector<UI> tin(N);
     vector<UI> fup(N);
     UI timer = 0;
-    for (UI i=0; i<N; ++i) {
-        if (!used[i]) {
-            dfs_bridges(G.get_adj_list(), bridges, used, timer, tin, fup, i, N + 1);
+
+    for (UI vert=0; vert<N; ++vert) {
+        if (!used[vert]) {
+            dfs_bridges(G.get_adj_list(), bridges, used, timer, tin, fup, vert, N + 1);
         }
     }
 }
 
+template <typename T>
 void rand_bridges(  vector<vector<vector<UI>>> &adj,
-                    vector<vector<UI>> &edges,
+                    vector<EDGE<T>> &edges,
                     const UI &N,
                     vector<bool> &used,
                     const UI &current,
-                    const UI &parent )
+                    const UI &parent,
+                    uniform_int_distribution<> &uid)
 {
     used[current] = 1;
-    UI mark = 0;
+    T mark = 0;
     UI parent_coord;
     for (UI i=0; i<adj[current].size(); i++){
         UI child = adj[current][i][0];
@@ -62,35 +64,38 @@ void rand_bridges(  vector<vector<vector<UI>>> &adj,
             continue;
         }
         if (used[child]) {
-            if (edges[adj[current][i][1]].size() < 3){
-                UI r = rand() % 2147483647;
-                edges[adj[current][i][1]].push_back(r);
+            if (!edges[adj[current][i][1]].weight_flag){
+                edges[adj[current][i][1]].weight_flag = 1;
+//                edges[adj[current][i][1]].weight = rand() % 4294967296;
+              edges[adj[current][i][1]].weight = uid(gen);
             }
-            mark = mark ^ edges[adj[current][i][1]][2];
+            mark = mark ^ edges[adj[current][i][1]].weight;
         }
         else{
-            rand_bridges(adj, edges, N, used, child, current);
-            mark = mark ^ edges[adj[current][i][1]][2];
+            rand_bridges(adj, edges, N, used, child, current, uid);
+            mark = mark ^ edges[adj[current][i][1]].weight;
         }
     }
     if (parent == N+1) return;
-    if (edges[adj[current][parent_coord][1]].size() < 3) {
-        edges[adj[current][parent_coord][1]].push_back(mark);
-    }
-    else {
-        edges[adj[current][parent_coord][1]][2] = mark;
-    }
+    edges[adj[current][parent_coord][1]].weight_flag = 1;
+    edges[adj[current][parent_coord][1]].weight = mark;
 }
 
-void find_rand_bridges(Graph &G){
+
+template <typename T>
+void find_rand_bridges(Graph<T> &G){
     UI N = G.get_graph_size();
     vector<bool> used(N);
-
+    uniform_int_distribution<> uid(0, numeric_limits<T>::max());
     for (UI current=0; current<N; current++) {
         if (!used[current]) {
-            rand_bridges(G.get_adj_list(), G.get_edges_list(), N, used, current, N + 1);
+            rand_bridges(G.get_adj_list(), G.get_edges_list(), N, used, current, N + 1, uid);
         }
     }
 }
+
+
+
+
 
 #endif //LAB1_GRAPHS_ALGO_FIND_BRIDGES_H

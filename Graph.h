@@ -2,36 +2,47 @@
 #ifndef LAB1_GRAPHS_ALGO_GRAPH_H
 #define LAB1_GRAPHS_ALGO_GRAPH_H
 
-using namespace std;
+UI tolerance = 10000;
+uniform_int_distribution<> uid1(0, tolerance-1);
 
-typedef unsigned int UI;  // 4 bytes [0; 4 294 967 295]
+template <class T>
+struct EDGE{
+    UI edge_a;
+    UI edge_b;
+    T weight;
+    bool weight_flag;
+};
 
+template <typename T>
 class Graph {
 private:
     UI graph_size;
     UI edges_num;
     float edges_dens;
-    vector<vector<UI>> edges_list;
+    vector<EDGE<T>> edges_list;
     vector<vector<vector<UI>>> adj_list;
 public:
     Graph(UI num){
         graph_size = num;
         edges_num = 0;
         edges_dens = 0;
-        for (int i=0; i<graph_size; i++){
-            vector<vector<UI>> vec;
-            adj_list.push_back(vec);
+        for (UI i=0; i<graph_size; i++){
+//            vector<vector<UI>> vec;
+            adj_list.push_back(vector<vector<UI>>{});
         }
     }
 
     void generate_rand(float probabil){
-        UI tolerance = 100000;
         UI p = probabil * tolerance;
         for(UI i=0; i<graph_size; i++){
             for(UI j=i+1; j<graph_size; j++){
                 if (p > (rand() % tolerance)) {
-//                if (p > (uid(gen))){
-                    edges_list.push_back(vector<UI>{i, j});
+//                if (p > (uid1(gen))){
+                    EDGE<T> edge;
+                    edge.edge_a = i;
+                    edge.edge_b = j;
+                    edge.weight_flag = 0;
+                    edges_list.push_back(edge);
                     adj_list[i].push_back(vector<UI>{j, edges_num});
                     adj_list[j].push_back(vector<UI>{i, edges_num});
                     edges_num++;
@@ -46,8 +57,11 @@ public:
         for (UI i; i<adj_list[a].size(); i++) {
             if (b == adj_list[a][i][0]) return 0;
         }
-        edges_list.push_back(vector<UI>{min(a,b), max(a,b)});                         //// ATTENTION we dont add edge to edges_list
-                                                                                        //// because we didnt remove edge from
+        EDGE<T> edge;
+        edge.edge_a = min(a,b);
+        edge.edge_b = max(a,b);
+        edge.weight_flag = 0;
+        edges_list.push_back(edge);
         adj_list[a].push_back(vector<UI>{b, edges_num});
         adj_list[b].push_back(vector<UI>{a, edges_num});
         edges_num++;
@@ -56,9 +70,13 @@ public:
     }
 
     void delete_edge(UI a, UI b){
+    /// ATTENTION
+    /// if we delete edge we should change all indexes which connect adj_list and edges_list
+    /// but we don't do that because it is expensive operation and it isn't necessary for us
+    /// that's why we can't use find_rand_bridges after deleting any edges
         for (UI i=0; i<adj_list[a].size(); i++){
             if (b == adj_list[a][i][0]) {
-                edges_list.erase(edges_list.begin() + adj_list[a][i][1]);
+//                edges_list.erase(edges_list.begin() + adj_list[a][i][1]);
                 adj_list[a].erase(adj_list[a].begin()+i);
 
             }
@@ -86,7 +104,7 @@ public:
         return adj_list;
     }
 
-    vector<vector<UI>> & get_edges_list(){
+    vector<EDGE<T>> & get_edges_list(){
         return edges_list;
     }
 
@@ -117,8 +135,10 @@ public:
             cout << "List is empty" << endl;
         else {
             for (UI i=0; i<edges_num; i++){
-               copy(edges_list[i].begin(), edges_list[i].end(), ostream_iterator<UI>(cout," "));
-               cout << endl;
+
+//               copy(edges_list[i].begin(), edges_list[i].end(), ostream_iterator<UI>(cout," "));
+                cout << edges_list[i].edge_a << " - " << edges_list[i].edge_b << ": " << edges_list[i].weight << " " << edges_list[i].weight_flag << endl;
+//                cout << endl;
             }
         }
     }

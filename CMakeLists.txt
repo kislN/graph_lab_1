@@ -3,4 +3,4 @@ project(lab1_graphs_algo)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_executable(lab1_graphs_algo main.cpp Graph.h check_bridge.h find_bridges.h weights_sort.h)
+add_executable(lab1_graphs_algo main.cpp Graph.h check_bridge.h find_bridges.h weights_sort.h stress_tests.h real_graph.h)

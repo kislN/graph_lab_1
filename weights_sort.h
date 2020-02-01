@@ -2,20 +2,21 @@
 #ifndef LAB1_GRAPHS_ALGO_WEIGHTS_SORT_H
 #define LAB1_GRAPHS_ALGO_WEIGHTS_SORT_H
 
-#define MAX_TYPE  4294967295
-
-bool comp(vector<UI> a, vector<UI> b){
-    return a[2] < b[2];
+template <typename T>
+bool comp(EDGE<T> a, EDGE<T> b){
+    return a.weight < b.weight;
 }
 
-void radix_alg(vector<vector<UI>> &vec, vector<vector<UI>> output){
+template <typename T>
+void radix_alg(vector<EDGE<T>> &vec, vector<EDGE<T>> output){
     UI n = vec.size();
-    for (UI i=0; i<4; i++){
-        UI count[256] = {0};
+    unsigned char type_size = sizeof(T);
+    for (UI i=0; i<type_size; i++){
+        vector<UI> count(256);
         UI k = i * 8;
         for (UI j = 0; j < n; j++)
         {
-            count[static_cast<uint8_t>((vec[j][2] & (0xff << k)) >> k )]++;
+            count[static_cast<uint8_t>((vec[j].weight & (0xff << k)) >> k )]++;
         }
 
         for (UI j = 1; j < 256; j++)
@@ -23,45 +24,48 @@ void radix_alg(vector<vector<UI>> &vec, vector<vector<UI>> output){
 
         for (UI j = n; j > 0; j--)
         {
-            uint8_t a = static_cast<uint8_t>((vec[j-1][2] & (0xff << k)) >> k );
-            output[count[a] - 1][0] = vec[j-1][0];
-            output[count[a] - 1][1] = vec[j-1][1];
-            output[count[a] - 1][2] = vec[j-1][2];
+            uint8_t a = static_cast<uint8_t>((vec[j-1].weight & (0xff << k)) >> k );
+            output[count[a] - 1].edge_a = vec[j-1].edge_a;
+            output[count[a] - 1].edge_b = vec[j-1].edge_b;
+            output[count[a] - 1].weight = vec[j-1].weight;
             count[a]--;
         }
 
         for (UI j = 0; j < n; j++) {
-            vec[j][0] = output[j][0];
-            vec[j][1] = output[j][1];
-            vec[j][2] = output[j][2];
+            vec[j].edge_a = output[j].edge_a;
+            vec[j].edge_b = output[j].edge_b;
+            vec[j].weight = output[j].weight;
         }
     }
 }
 
-void radix_sort(vector<vector<UI>> &vec){
+template <typename T>
+void radix_sort(vector<EDGE<T>> &vec){
     radix_alg(vec, vec);
 }
 
-void bucket_sort(vector<vector<UI>> &vec, const UI &numBuckets)
+
+template <typename T>
+void bucket_sort(vector<EDGE<T>> &vec, const UI &numBuckets)
 {
-    UI minElement, maxElement = vec[0][0];
-    vector<vector<vector<UI>>> buckets;
+    T minElement, maxElement = vec[0].weight;
+    vector<vector<EDGE<T>>> buckets;
     for (UI i=0; i<numBuckets; i++){
-        vector<vector<UI>> v;
+        vector<EDGE<T>> v;
         buckets.push_back(v);
     }
     for (UI i=0; i<vec.size(); i++){
-        if(vec[i][2] < minElement) minElement = vec[i][2];
-        if(vec[i][2] > maxElement) maxElement = vec[i][2];
+        minElement = min(vec[i].weight, minElement);
+        maxElement = max(vec[i].weight, maxElement);
     }
-    UI range = maxElement - minElement + 1;
+    T range = maxElement - minElement + 1;
     double d = double(numBuckets) / range;
     for (UI i=0; i<vec.size(); i++){
-        UI index = UI((vec[i][2]-minElement) * d);
+        UI index = UI((vec[i].weight - minElement) * d);
         buckets[index].push_back(vec[i]);
     }
     for (UI i=0; i<numBuckets; i++){
-        sort(buckets[i].begin(), buckets[i].end(), comp);
+        sort(buckets[i].begin(), buckets[i].end(), comp<T>);
     }
     vec.clear();
     for (UI i=0; i<numBuckets; i++){
