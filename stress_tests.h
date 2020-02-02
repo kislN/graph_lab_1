@@ -1,8 +1,49 @@
-
-
 #ifndef LAB1_GRAPHS_ALGO_STRESS_TESTS_H
 #define LAB1_GRAPHS_ALGO_STRESS_TESTS_H
 
+
+
+void stress_test1(){
+    UI N = 1000;
+    UI M = N;
+    float p = M/((N*(N-1))/2.);
+
+
+        Graph<UC> G(N);
+        G.generate_rand(p);
+
+        find_rand_bridges(G);
+        vector<EDGE<UC>> &wei = G.get_edges_list();
+        sort(wei.begin(), wei.end(), comp<UC>);
+        G.print_edges_list();
+        cout << "here" << endl;
+        UI count_fails = 0;
+        UI count_all = 0;
+        UI len = wei.size();   //necessary
+        for (UI i=0; i<len; i++){
+            if(wei[i].weight != 0) {
+                UI k = 1;
+                UI l = 0;
+                if (i+k < len) {
+                    while (wei[i].weight == wei[i + k].weight) {
+                        l += (check_double_bridge(G, wei[i].edge_a, wei[i].edge_b, wei[i + k].edge_a, wei[i + k].edge_b));
+                        count_all++;
+                        k++;
+                        if (i+k >= len) break;
+                    }
+                }
+                if (l) count_fails++;
+            }
+            else{
+                count_fails += (!check_one_bridge(G, wei[i].edge_a, wei[i].edge_b));
+                count_all++;
+            }
+        }
+
+        cout << "fails = " << count_fails << " right = " << count_all - count_fails << " all = " << count_all << endl;
+
+
+};
 
 //bool stress_for_dfs(){
 //    for (UI i=3; i<=1000; i++){

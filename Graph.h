@@ -1,6 +1,25 @@
+#include <iostream>
+#include <vector>
+#include <fstream>
+#include <string>
+#include <iomanip>
+#include <sstream>
+#include <iterator>
+#include <algorithm>
+#include <ctime>
+#include <random>
+#include <stdint.h>
 
 #ifndef LAB1_GRAPHS_ALGO_GRAPH_H
 #define LAB1_GRAPHS_ALGO_GRAPH_H
+
+typedef unsigned int UI;    // 4 bytes [0; 4 294 967 295]
+typedef uint64_t UL;        // 8 bytes [0; 18 446 744 073 709 551 615]
+typedef unsigned short US;  // 2 bytes [0; 65 535]
+typedef uint8_t UC;         // 1 byte [0; 255] don't use because it's a character type (like unsigned char)
+using namespace std;
+
+mt19937 gen(time(0));
 
 UI tolerance = 10000;
 uniform_int_distribution<> uid1(0, tolerance-1);
@@ -36,8 +55,8 @@ public:
         UI p = probabil * tolerance;
         for(UI i=0; i<graph_size; i++){
             for(UI j=i+1; j<graph_size; j++){
-                if (p > (rand() % tolerance)) {
-//                if (p > (uid1(gen))){
+//                if (p > (rand() % tolerance)) {
+                if (p > (uid1(gen))){
                     EDGE<T> edge;
                     edge.edge_a = i;
                     edge.edge_b = j;
@@ -69,6 +88,7 @@ public:
         return 1;
     }
 
+
     void delete_edge(UI a, UI b){
     /// ATTENTION
     /// if we delete edge we should change all indexes which connect adj_list and edges_list
@@ -78,11 +98,15 @@ public:
             if (b == adj_list[a][i][0]) {
 //                edges_list.erase(edges_list.begin() + adj_list[a][i][1]);
                 adj_list[a].erase(adj_list[a].begin()+i);
+                break;
 
             }
         }
         for (UI i=0; i<adj_list[b].size(); i++){
-            if (a == adj_list[b][i][0]) adj_list[b].erase(adj_list[b].begin()+i);
+            if (a == adj_list[b][i][0]) {
+                adj_list[b].erase(adj_list[b].begin() + i);
+                break;
+            }
         }
         edges_num--;
         edges_dens = edges_num / ((graph_size * (graph_size - 1)) / 2.);
