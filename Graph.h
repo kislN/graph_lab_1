@@ -13,23 +13,23 @@
 #ifndef LAB1_GRAPHS_ALGO_GRAPH_H
 #define LAB1_GRAPHS_ALGO_GRAPH_H
 
-typedef unsigned int UI;    // 4 bytes [0; 4 294 967 295]
 typedef uint64_t UL;        // 8 bytes [0; 18 446 744 073 709 551 615]
+typedef unsigned int UI;    // 4 bytes [0; 4 294 967 295]
 typedef unsigned short US;  // 2 bytes [0; 65 535]
-typedef uint8_t UC;         // 1 byte [0; 255] don't use because it's a character type (like unsigned char)
+typedef uint8_t UC;         // 1 byte [0; 255] don't print because it's a character type (like unsigned char)
 using namespace std;
 
-mt19937 gen(time(0));
+UI tolerance = 100000000;
 
-UI tolerance = 10000;
-uniform_int_distribution<> uid1(0, tolerance-1);
+mt19937 gen(time(0));   /// Mersenne twister
+uniform_int_distribution<> uid(0, tolerance-1);
 
 template <class T>
 struct EDGE{
-    UI edge_a;
-    UI edge_b;
+    UI vertex_a;
+    UI vertex_b;
     T weight;
-    bool weight_flag;
+    bool weight_flag;   //  It changes after defining random weight.
 };
 
 template <typename T>
@@ -37,16 +37,18 @@ class Graph {
 private:
     UI graph_size;
     UI edges_num;
-    float edges_dens;
-    vector<EDGE<T>> edges_list;
-    vector<vector<vector<UI>>> adj_list;
+    float edges_density;
+    vector<EDGE<T>> edges_list;             // List of edges where edge (a,b) == edge (b,a).
+    vector<vector<vector<UI>>> adj_list;    // Adjacency list includes all vertexes,
+                                            // each vertex A has list of pairs (B, index)
+                                            // where (A,B) is the edge of graph and
+                                            // index is the index of this edge in edges_list.
 public:
     Graph(UI num){
         graph_size = num;
         edges_num = 0;
-        edges_dens = 0;
+        edges_density = 0;
         for (UI i=0; i<graph_size; i++){
-//            vector<vector<UI>> vec;
             adj_list.push_back(vector<vector<UI>>{});
         }
     }
@@ -56,10 +58,10 @@ public:
         for(UI i=0; i<graph_size; i++){
             for(UI j=i+1; j<graph_size; j++){
 //                if (p > (rand() % tolerance)) {
-                if (p > (uid1(gen))){
+                if (p > (uid(gen))){
                     EDGE<T> edge;
-                    edge.edge_a = i;
-                    edge.edge_b = j;
+                    edge.vertex_a = i;
+                    edge.vertex_b = j;
                     edge.weight_flag = 0;
                     edges_list.push_back(edge);
                     adj_list[i].push_back(vector<UI>{j, edges_num});
@@ -68,7 +70,7 @@ public:
                 }
             }
         }
-        edges_dens = edges_num / ((graph_size * (graph_size - 1)) / 2.);
+        edges_density = edges_num / ((graph_size * (graph_size - 1)) / 2.);
     }
 
     bool add_edge(UI a, UI b){
@@ -77,14 +79,14 @@ public:
             if (b == adj_list[a][i][0]) return 0;
         }
         EDGE<T> edge;
-        edge.edge_a = min(a,b);
-        edge.edge_b = max(a,b);
+        edge.vertex_a = min(a, b);
+        edge.vertex_b = max(a, b);
         edge.weight_flag = 0;
         edges_list.push_back(edge);
         adj_list[a].push_back(vector<UI>{b, edges_num});
         adj_list[b].push_back(vector<UI>{a, edges_num});
         edges_num++;
-        edges_dens = edges_num / ((graph_size * (graph_size - 1)) / 2.);
+        edges_density = edges_num / ((graph_size * (graph_size - 1)) / 2.);
         return 1;
     }
 
@@ -109,7 +111,7 @@ public:
             }
         }
         edges_num--;
-        edges_dens = edges_num / ((graph_size * (graph_size - 1)) / 2.);
+        edges_density = edges_num / ((graph_size * (graph_size - 1)) / 2.);
     }
 
     UI get_edges_num(){
@@ -121,7 +123,7 @@ public:
     }
 
     float get_edges_dens(){
-        return edges_dens;
+        return edges_density;
     }
 
     vector<vector<vector<UI>>> & get_adj_list(){

@@ -46,37 +46,70 @@ void radix_sort(vector<EDGE<T>> &vec){
 
 
 template <typename T>
-void bucket_sort(vector<EDGE<T>> &vec, const UI &numBuckets)
+void bucket_sort(vector<EDGE<T>> &vec, const UI &num_buckets)
 {
-    T minElement, maxElement = vec[0].weight;
-    vector<vector<EDGE<T>>> buckets;
-    for (UI i=0; i<numBuckets; i++){
-        vector<EDGE<T>> v;
-        buckets.push_back(v);
-    }
+    T min_element = vec[0].weight, max_element = vec[0].weight;
+    vector<vector<EDGE<T>>> buckets(num_buckets, vector<EDGE<T>>());
+
     for (UI i=0; i<vec.size(); i++){
-        minElement = min(vec[i].weight, minElement);
-        maxElement = max(vec[i].weight, maxElement);
+        min_element = min(vec[i].weight, min_element);
+        max_element = max(vec[i].weight, max_element);
     }
-    T range = maxElement - minElement + 1;
-    double d = double(numBuckets) / range;
+
+    T range = max_element - min_element + 1;
+    double d = double(num_buckets) / range;
+
     for (UI i=0; i<vec.size(); i++){
-        UI index = UI((vec[i].weight - minElement) * d);
+        UI index = UI((vec[i].weight - min_element) * d);
+        if (index == num_buckets) index--;
+//        UI index = UI((vec[i].weight - min_element)/range);
+
         buckets[index].push_back(vec[i]);
     }
-    for (UI i=0; i<numBuckets; i++){
+    for (UI i=0; i < num_buckets; i++){
         sort(buckets[i].begin(), buckets[i].end(), comp<T>);
     }
+
     vec.clear();
-    for (UI i=0; i<numBuckets; i++){
+
+    for (UI i=0; i < num_buckets; i++){
         for (UI j=0; j<buckets[i].size(); j++){
             vec.push_back(buckets[i][j]);
         }
     }
 }
 
+//vector<UI> buck_sort_rec(vector<UI> &vec, UI min_element, UI max_element, UI n_buck){
 //
-//void bucket_sort(vector<UI> * vec, size_t n)
+//    if (vec.size()<2 || min_element==max_element){
+//        return vec;
+//    }
+//    vector<vector<UI>> buckets(n_buck, vector<UI>());
+//    UI range = max_element - min_element + 1;
+//    for (UI i=0; i<vec.size(), i++){
+//        UI index = UI((vec[i].weight - min_element) * d);
+//        buckets[index].push_back(vec[i]);
+//    }
+//}
+
+//double[] bucketSort (double[] array, double minElement, double maxElement)
+//if array.length < 2 or minElement == maxElement
+//return array;
+//range = maxElement - minElement
+//for i = 0  to array.length - 1
+//index = int(array[i] * numBuckets / range)
+//добавим array[i] в конец buckets[index]
+//minBucktes[index] = minimum(buckets[index], array[i])
+//maxBuckets[index] = maximum(buckets[index], array[i])
+//for i = 0 to numBuckets - 1
+//buckets[i] = bucketSort(buckets[i], minBucktes[i], maxBuckets[i])
+//for i = 0 to numBuckets - 1
+//for k = 0 to buckets[i].length - 1
+//добавим buckets[i][k] в конец answer
+//return answer
+
+
+//void bucket_sort2(vector<UI> * vec, size_t n)
 //{
 //    // 1) Create n empty buckets
 //    vector<UI> b[n];

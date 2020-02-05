@@ -52,7 +52,8 @@ void rand_bridges(  vector<vector<vector<UI>>> &adj,
                     vector<bool> &used,
                     const UI &current,
                     const UI &parent,
-                    uniform_int_distribution<> &uid)
+                    uniform_int_distribution<> &uid,
+                    UI &not_tree)
 {
     used[current] = 1;
     T mark = 0;
@@ -68,11 +69,12 @@ void rand_bridges(  vector<vector<vector<UI>>> &adj,
                 edges[adj[current][i][1]].weight_flag = 1;
 //                edges[adj[current][i][1]].weight = rand() % 4294967296;
               edges[adj[current][i][1]].weight = uid(gen);
+              not_tree++;
             }
             mark = mark ^ edges[adj[current][i][1]].weight;
         }
         else{
-            rand_bridges(adj, edges, N, used, child, current, uid);
+            rand_bridges(adj, edges, N, used, child, current, uid, not_tree);
             mark = mark ^ edges[adj[current][i][1]].weight;
         }
     }
@@ -83,15 +85,17 @@ void rand_bridges(  vector<vector<vector<UI>>> &adj,
 
 
 template <typename T>
-void find_rand_bridges(Graph<T> &G){
+UI find_rand_bridges(Graph<T> &G){
     UI N = G.get_graph_size();
+    UI not_tree_num = 0;
     vector<bool> used(N);
     uniform_int_distribution<> uid(0, numeric_limits<T>::max());
     for (UI current=0; current<N; current++) {
         if (!used[current]) {
-            rand_bridges(G.get_adj_list(), G.get_edges_list(), N, used, current, N + 1, uid);
+            rand_bridges(G.get_adj_list(), G.get_edges_list(), N, used, current, N + 1, uid, not_tree_num);
         }
     }
+    return not_tree_num;
 }
 
 

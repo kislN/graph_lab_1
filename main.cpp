@@ -5,75 +5,85 @@
 #include "weights_sort.h"
 #include "real_graph.h"
 #include "stress_tests.h"
+#include "experiments.h"
 #include <cmath>
 #include <limits>
 
 
-template <typename T>
-void experim(ofstream &f, UI iter, UI step, UI aver, UI dens){
-    UI N = 0;
-    for (UI i=0; i<iter; i++){    //loop for N (10-1000)
-        N += step;
-        UI M = N/2 * dens;
-        float p = M/((N*(N-1))/2.);
-        UI time_dfs = 0, time_rand = 0, time_radix = 0, time_bucket = 0, time_sort = 0;
 
-        for (UI j=0; j<aver; j++) { //loop for average time
-            Graph<T> Gr(N);
-            Gr.generate_rand(p);
-
-            UI start_time = clock();
-            vector<UI> bri;
-            find_dfs_bridges(Gr, bri);
-            time_dfs += (clock() - start_time);
-
-            start_time = clock();
-            find_rand_bridges(Gr);
-            time_rand += (clock() - start_time);
-
-            vector<EDGE<T>> wei1 = Gr.get_edges_list();
-            vector<EDGE<T>> wei2 = wei1;
-            vector<EDGE<T>> wei3 = wei1;
-
-            start_time = clock();
-            radix_sort(wei1);
-            time_radix += (clock() - start_time) + time_rand;
-
-            start_time = clock();
-            bucket_sort(wei2, wei2.size() / 20);
-            time_bucket += (clock() - start_time) + time_rand;
-
-            start_time = clock();
-            sort(wei3.begin(), wei3.end(), comp<T>);
-            time_sort += (clock() - start_time) + time_rand;
+void dfs_bri (  vector<vector<vector<UI>>> &adj,
+                vector<bool> &used,
+                UI &current,
+                UI &parent )
+{
+//    cout << "current = " << current << endl;
+    used[current] = 1;
+//    k++;
+//    cout << k << endl;
+    for (UI i=0; i<adj[current].size(); ++i) {
+        UI child = adj[current][i][0];
+        if (child == parent)  continue;
+        if (used[child]) {
+//            cout<< "child if = " << child << endl;
         }
-
-        f << N << "," << M << ","<< time_dfs / aver*1000000.0 << "," << time_rand / aver*1000000.0 << "," << time_radix / aver*1000000.0 << "," << time_bucket / aver*1000000.0 << "," << time_sort / aver*1000000.0 <<  endl;
+        else {
+//            cout << "child else = " << child << endl;
+            dfs_bri (adj, used, child, current);
+//            k--;
+//            cout << "exit2" << endl;
+        }
     }
 }
 
 template <typename T>
-bool do_experim(string file_name){
-    ofstream out(file_name);
-    if (!out.is_open()) return 0;
-    cout << "File is open " << endl;
-    out << "NumVert,NumEdges,DFS,Rand,Rand_Radix,Rand_Bucket,Rand_Sort" << endl;
-    for (UI i=1; i<9; i*=2) {
-        experim<T>(out, 10, 100, 3, i);
+void find_dfs_bri(Graph<T> &G) {
+    UI N = G.get_graph_size();
+    vector<bool> used(N);
+
+    for (UI vert=0; vert<N; ++vert) {
+        if (!used[vert]) {
+            dfs_bri(G.get_adj_list(), used, vert, N);
+            cout << "exit" << endl;
+        }
     }
-    out.close();
-    return 1;
 }
+
 
 int main() {
 
 //    Graph<UI> NY_graph(264346);
 //    create_NY_graph(NY_graph);
 
-//    do_experim<UC>("./data/Out_8b.csv");
-//    do_experim<US>("./data/Out_16b.csv");
-//    do_experim<UI>("./data/Out_32b.csv");
-    do_experim<UL>("./data/Out_64b.csv");
+//    do_experim<UC>("./data/Out_8b.csv", 21, 500, 3);
+//    do_experim<US>("./data/Out_16b.csv", 21, 500, 3);
+//    do_experim<UI>("./data/Out_32b.csv", 21, 500, 3);
+//    do_experim<UL>("./data/Out_64b.csv", 21, 500, 3);
+
+
+
+    UI N = 10;
+    UI M = N;
+    float p = M/((N*(N-1))/2.);
+    Graph<US> G(N);
+    cout << "Graph is done" << endl;
+    G.generate_rand(p);
+    cout << "Gen" << endl;
+    G.print_adj_with_index();
+    cout << endl;
+    G.print_adj_list();
+    vector<UI> v;
+    find_dfs_bridges(G, v);
+    cout << "dfs" << endl;
+
+
+//    stress_test2();
+//    stress_test5();
+//    vector<EDGE<US>> wei1 = G.get_edges_list();
+//    vector<EDGE<US>> wei2 = wei1;
+//    vector<EDGE<US>> wei3 = wei1;
+//    G.print_edges_list();
+//    if (wei2.size()) bucket_sort(wei2, wei2.size() / 20 + 1);
+
 
 
 
