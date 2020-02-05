@@ -2,49 +2,51 @@
 #ifndef LAB1_GRAPHS_ALGO_WEIGHTS_SORT_H
 #define LAB1_GRAPHS_ALGO_WEIGHTS_SORT_H
 
+/// Comparator for std::sort.
 template <typename T>
 bool comp(EDGE<T> a, EDGE<T> b){
     return a.weight < b.weight;
 }
 
+
+/// Radix sort.
 template <typename T>
-void radix_alg(vector<EDGE<T>> &vec, vector<EDGE<T>> output){
-    UI n = vec.size();
+void radix_sort(vector<EDGE<T>> &vec){
+    vector<EDGE<T>> output = vec;
+    UI vec_size = vec.size();
     unsigned char type_size = sizeof(T);
-    for (UI i=0; i<type_size; i++){
+
+    for (UI rank = 0; rank < type_size; rank++){
         vector<UI> count(256);
-        UI k = i * 8;
-        for (UI j = 0; j < n; j++)
+        UI shift = rank * 8;
+
+        for (UI i = 0; i < vec_size; i++)
         {
-            count[static_cast<uint8_t>((vec[j].weight & (0xff << k)) >> k )]++;
+            count[static_cast<uint8_t>((vec[i].weight & (0xff << shift)) >> shift )]++;
         }
 
-        for (UI j = 1; j < 256; j++)
-            count[j] += count[j - 1];
+        for (UI i = 1; i < 256; i++)
+            count[i] += count[i - 1];
 
-        for (UI j = n; j > 0; j--)
+        for (UI i = vec_size; i > 0; i--)
         {
-            uint8_t a = static_cast<uint8_t>((vec[j-1].weight & (0xff << k)) >> k );
-            output[count[a] - 1].edge_a = vec[j-1].edge_a;
-            output[count[a] - 1].edge_b = vec[j-1].edge_b;
-            output[count[a] - 1].weight = vec[j-1].weight;
-            count[a]--;
+            uint8_t dig = static_cast<uint8_t>((vec[i-1].weight & (0xff << shift)) >> shift );
+            output[count[dig] - 1].vertex_a = vec[i-1].vertex_a;
+            output[count[dig] - 1].vertex_b = vec[i-1].vertex_b;
+            output[count[dig] - 1].weight = vec[i-1].weight;
+            count[dig]--;
         }
 
-        for (UI j = 0; j < n; j++) {
-            vec[j].edge_a = output[j].edge_a;
-            vec[j].edge_b = output[j].edge_b;
-            vec[j].weight = output[j].weight;
+        for (UI i = 0; i < vec_size; i++) {
+            vec[i].vertex_a = output[i].vertex_a;
+            vec[i].vertex_b = output[i].vertex_b;
+            vec[i].weight = output[i].weight;
         }
     }
 }
 
-template <typename T>
-void radix_sort(vector<EDGE<T>> &vec){
-    radix_alg(vec, vec);
-}
 
-
+/// Bucket sort.
 template <typename T>
 void bucket_sort(vector<EDGE<T>> &vec, const UI &num_buckets)
 {
@@ -78,60 +80,6 @@ void bucket_sort(vector<EDGE<T>> &vec, const UI &num_buckets)
         }
     }
 }
-
-//vector<UI> buck_sort_rec(vector<UI> &vec, UI min_element, UI max_element, UI n_buck){
-//
-//    if (vec.size()<2 || min_element==max_element){
-//        return vec;
-//    }
-//    vector<vector<UI>> buckets(n_buck, vector<UI>());
-//    UI range = max_element - min_element + 1;
-//    for (UI i=0; i<vec.size(), i++){
-//        UI index = UI((vec[i].weight - min_element) * d);
-//        buckets[index].push_back(vec[i]);
-//    }
-//}
-
-//double[] bucketSort (double[] array, double minElement, double maxElement)
-//if array.length < 2 or minElement == maxElement
-//return array;
-//range = maxElement - minElement
-//for i = 0  to array.length - 1
-//index = int(array[i] * numBuckets / range)
-//добавим array[i] в конец buckets[index]
-//minBucktes[index] = minimum(buckets[index], array[i])
-//maxBuckets[index] = maximum(buckets[index], array[i])
-//for i = 0 to numBuckets - 1
-//buckets[i] = bucketSort(buckets[i], minBucktes[i], maxBuckets[i])
-//for i = 0 to numBuckets - 1
-//for k = 0 to buckets[i].length - 1
-//добавим buckets[i][k] в конец answer
-//return answer
-
-
-//void bucket_sort2(vector<UI> * vec, size_t n)
-//{
-//    // 1) Create n empty buckets
-//    vector<UI> b[n];
-//
-//    // 2) Put array elements in different buckets
-//    for (UI i=0; i<n; i++)
-//    {
-//        UI bi = n*((*vec)[i]/2147483647); // Index in bucket
-//        b[bi].push_back((*vec)[i]);
-//    }
-//
-//    // 3) Sort individual buckets
-//    for (UI i=0; i<n; i++)
-//        sort(b[i].begin(), b[i].end());
-//
-//    // 4) Concatenate all buckets into arr[]
-//    UI index = 0;
-//    for (UI i = 0; i < n; i++)
-//        for (UI j = 0; j < b[i].size(); j++)
-//            (*vec)[index++] = b[i][j];
-//}
-
 
 
 #endif //LAB1_GRAPHS_ALGO_WEIGHTS_SORT_H

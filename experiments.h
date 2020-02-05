@@ -18,11 +18,11 @@ void experim(ofstream &f, UI iter, UI step, UI aver, UI power, UI coef){
 
             UI start_time = clock();
             vector<UI> bri;
-            find_dfs_bridges(Gr, bri);
+            DBS(Gr, bri);
             time_dfs += (clock() - start_time);
 
             start_time = clock();
-            find_rand_bridges(Gr);
+            RBS(Gr);
             time_rand += (clock() - start_time);
 
             vector<EDGE<T>> wei1 = Gr.get_edges_list();

@@ -21,7 +21,7 @@ using namespace std;
 
 UI tolerance = 100000000;
 
-mt19937 gen(time(0));   /// Mersenne twister
+mt19937 gen(time(0));   // Mersenne twister
 uniform_int_distribution<> uid(0, tolerance-1);
 
 template <class T>
@@ -44,8 +44,8 @@ private:
                                             // where (A,B) is the edge of graph and
                                             // index is the index of this edge in edges_list.
 public:
-    Graph(UI num){
-        graph_size = num;
+    Graph(UI N){
+        graph_size = N;
         edges_num = 0;
         edges_density = 0;
         for (UI i=0; i<graph_size; i++){
@@ -53,12 +53,12 @@ public:
         }
     }
 
-    void generate_rand(float probabil){
-        UI p = probabil * tolerance;
+    void generate_rand(float probability){
+        UI prob = probability * tolerance;
         for(UI i=0; i<graph_size; i++){
             for(UI j=i+1; j<graph_size; j++){
-//                if (p > (rand() % tolerance)) {
-                if (p > (uid(gen))){
+//                if (prob > (rand() % tolerance)) {
+                if (prob > (uid(gen))){
                     EDGE<T> edge;
                     edge.vertex_a = i;
                     edge.vertex_b = j;
@@ -74,7 +74,7 @@ public:
     }
 
     bool add_edge(UI a, UI b){
-        if((a==b) || (a>=graph_size) || (b>=graph_size)) return 0;
+        if((a == b) || (a >= graph_size) || (b >= graph_size)) return 0;
         for (UI i; i<adj_list[a].size(); i++) {
             if (b == adj_list[a][i][0]) return 0;
         }
@@ -93,15 +93,14 @@ public:
 
     void delete_edge(UI a, UI b){
     /// ATTENTION
-    /// if we delete edge we should change all indexes which connect adj_list and edges_list
-    /// but we don't do that because it is expensive operation and it isn't necessary for us
+    /// If we delete edge we should change all indexes which connect adj_list and edges_list
+    /// but we don't do that because it is expensive operation and it isn't necessary for our research
     /// that's why we can't use find_rand_bridges after deleting any edges
+
         for (UI i=0; i<adj_list[a].size(); i++){
             if (b == adj_list[a][i][0]) {
-//                edges_list.erase(edges_list.begin() + adj_list[a][i][1]);
                 adj_list[a].erase(adj_list[a].begin()+i);
                 break;
-
             }
         }
         for (UI i=0; i<adj_list[b].size(); i++){
@@ -145,15 +144,29 @@ public:
     void print_adj_list(){
         if (this->is_empty())
             cout << "List is empty" << endl;
-        else
-            for (UI i=0; i<graph_size; i++){
+        else {
+            for (UI i = 0; i < graph_size; i++) {
                 cout << "vert " << i << ": ";
-//                copy(adj_list[i].begin(), adj_list[i].end(), ostream_iterator<UI>(cout," "));
-                for(UI j=0; j<adj_list[i].size(); j++){
-                    cout << adj_list[i][j][0] << " " ;
+                for (UI j = 0; j < adj_list[i].size(); j++) {
+                    cout << adj_list[i][j][0] << " ";
                 }
                 cout << endl;
             }
+        }
+    }
+
+    void print_adj_with_indexes(){      // Print adjacency with the indexes of edges in edges_list.
+        if (this->is_empty())
+            cout << "List is empty" << endl;
+        else {
+            for (UI i = 0; i < graph_size; i++) {
+                cout << "vert " << i << ": ";
+                for (UI j = 0; j < adj_list[i].size(); j++) {
+                    cout << adj_list[i][j][0] << "(" << adj_list[i][j][1] << ") ";
+                }
+                cout << endl;
+            }
+        }
     }
 
     void print_edges_list(){
@@ -161,27 +174,11 @@ public:
             cout << "List is empty" << endl;
         else {
             for (UI i=0; i<edges_num; i++){
-
-//               copy(edges_list[i].begin(), edges_list[i].end(), ostream_iterator<UI>(cout," "));
                 cout << edges_list[i].edge_a << " - " << edges_list[i].edge_b << ": " << edges_list[i].weight << " " << edges_list[i].weight_flag << endl;
-//                cout << endl;
             }
         }
     }
 
-    void print_adj_with_index(){
-        if (this->is_empty())
-            cout << "List is empty" << endl;
-        else
-            for (UI i=0; i<graph_size; i++){
-                cout << "vert " << i << ": ";
-//                copy(adj_list[i].begin(), adj_list[i].end(), ostream_iterator<UI>(cout," "));
-                for(UI j=0; j<adj_list[i].size(); j++){
-                    cout << "(" << adj_list[i][j][0] << ", " << adj_list[i][j][1] << ") " ;
-                }
-                cout << endl;
-            }
-    }
 };
 
 

@@ -19,7 +19,7 @@ vector<string> split(const string &s, char delim) {
 
 template <typename T>
 bool create_NY_graph(Graph<T> &G) {
-    ifstream f("NYgraph.csv");
+    ifstream f("../data/NYgraph.csv");
     if (!f.is_open()) return 0;
     else{
         string line;

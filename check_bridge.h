@@ -2,7 +2,11 @@
 #ifndef LAB1_GRAPHS_ALGO_CHECK_BRIDGE_H
 #define LAB1_GRAPHS_ALGO_CHECK_BRIDGE_H
 
-void dfs_connected (UI &current, vector<vector<vector<UI>>> & adj, vector<bool> &used, vector<UI> &comp) {
+void dfs_connected ( UI &current,
+                     vector<vector<vector<UI>>> & adj,
+                     vector<bool> &used,
+                     vector<UI> &comp )
+{
     used[current] = 1;
     comp.push_back(current);
     for (UI i=0; i<adj[current].size(); ++i) {
@@ -13,43 +17,38 @@ void dfs_connected (UI &current, vector<vector<vector<UI>>> & adj, vector<bool> 
 }
 
 template <typename T>
-UI connect_comp(Graph<T> &G) {    //return amount of connected components
+UI connected_comp_num(Graph<T> &G) {    // Return amount of connected components.
     UI N = G.get_graph_size();
     UI comp_amount = 0;
     vector<bool> used(N);
     vector<UI> comp;
-    for (UI vert=0; vert<N; ++vert)
+    for (UI vert=0; vert<N; vert++)
         if (! used[vert]) {
             comp_amount++;
             comp.clear();
             dfs_connected (vert, G.get_adj_list(), used, comp);
-
-            /*cout << "Component:";
-            for (size_t j=0; j<comp.size(); ++j)
-                cout << ' ' << comp[j];
-            cout << endl;*/
         }
     return comp_amount;
 }
 
 template <typename T>
-bool check_one_bridge(Graph<T> &G, UI a, UI b){    //check a-b bridge
-    UI fir_amount_comp = connect_comp(G);
+bool check_one_bridge(Graph<T> &G, UI a, UI b) {    // Check a-b is bridge.
+    UI start_amount_comp = connected_comp_num(G);
     G.delete_edge(a, b);
-    UI last_amount_comp = connect_comp(G);
+    UI last_amount_comp = connected_comp_num(G);
     G.add_edge(a, b);
-    return last_amount_comp == (fir_amount_comp + 1);
+    return last_amount_comp == (start_amount_comp + 1);
 }
 
 template <typename T>
-bool check_double_bridge(Graph<T> &G, UI a, UI b, UI c, UI d){
-    UI fir_amount_comp = connect_comp(G);
+bool check_two_bridge(Graph<T> &G, UI a, UI b, UI c, UI d) {    // Check {a-b, c-d} is two-bridge.
+    UI start_amount_comp = connected_comp_num(G);
     G.delete_edge(a, b);
     G.delete_edge(c, d);
-    UI last_amount_comp = connect_comp(G);
+    UI last_amount_comp = connected_comp_num(G);
     G.add_edge(a, b);
     G.add_edge(c, d);
-    return last_amount_comp == (fir_amount_comp + 1);
+    return last_amount_comp == (start_amount_comp + 1);
 }
 
 #endif //LAB1_GRAPHS_ALGO_CHECK_BRIDGE_H

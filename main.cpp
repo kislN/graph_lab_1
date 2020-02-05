@@ -54,7 +54,7 @@ int main() {
 //    Graph<UI> NY_graph(264346);
 //    create_NY_graph(NY_graph);
 
-//    do_experim<UC>("./data/Out_8b.csv", 21, 500, 3);
+//    do_experim<UC>("../data/Out_8b.csv", 5, 10, 1);
 //    do_experim<US>("./data/Out_16b.csv", 21, 500, 3);
 //    do_experim<UI>("./data/Out_32b.csv", 21, 500, 3);
 //    do_experim<UL>("./data/Out_64b.csv", 21, 500, 3);
@@ -68,16 +68,16 @@ int main() {
     cout << "Graph is done" << endl;
     G.generate_rand(p);
     cout << "Gen" << endl;
-    G.print_adj_with_index();
+    G.print_adj_with_indexes();
     cout << endl;
     G.print_adj_list();
     vector<UI> v;
-    find_dfs_bridges(G, v);
+    DBS(G, v);
     cout << "dfs" << endl;
 
 
 //    stress_test2();
-//    stress_test5();
+    stress_test5();
 //    vector<EDGE<US>> wei1 = G.get_edges_list();
 //    vector<EDGE<US>> wei2 = wei1;
 //    vector<EDGE<US>> wei3 = wei1;
@@ -108,7 +108,7 @@ int main() {
 //        UI avtime5 = 0;
 //        UI start_time = clock();
 //        vector<UI> bri;
-//        find_dfs_bridges(Gr, bri);
+//        DBS(Gr, bri);
 //        avtime1 += (clock() - start_time);
 //
 //        start_time = clock();
@@ -170,11 +170,11 @@ int main() {
 //    for (UI i=0; i<wei.size(); i++){
 //        cout << wei[i][0] << " - " << wei[i][1] << ": " << wei[i][2] << endl;
 //    }
-//    find_dfs_bridges(&Gr, M);
+//    DBS(&Gr, M);
 //    Gr.print_adj_list();
 
 
-//    vector<vector<UI>> sin = find_dfs_bridges(Gr);
+//    vector<vector<UI>> sin = DBS(Gr);
 
 //    for(UI i=0; i<sin.size(); i++){
 //        cout << check_one_bridge(Gr, sin[i][0], sin[i][1]) << endl;
@@ -191,7 +191,7 @@ int main() {
 //            if (i+k < wei.size()) {
 //                while (wei[i][2] == wei[i + k][2]) {
 //                    cout << wei[i][0] << " - " << wei[i][1] << " and " << wei[i + k][0] << " - " << wei[i + k][1] << endl;
-//                    cout << check_double_bridge(Gr, wei[i][0], wei[i][1], wei[i + k][0], wei[i + k][1]) << endl;
+//                    cout << check_two_bridge(Gr, wei[i][0], wei[i][1], wei[i + k][0], wei[i + k][1]) << endl;
 //                    k++;
 //                    if (i+k >= wei.size()) break;
 //
@@ -216,7 +216,7 @@ int main() {
 //        start_time = clock();
 //        Graph G(M);
 //        G.generate_rand(density[i]);
-//        vector<int> marks = find_rand_bridges(&G, M);
+//        vector<int> marks = RBS(&G, M);
 //        sort(marks.begin(), marks.end());
 //        times.push_back((clock() - start_time) / 1000000.0 );
 //    }

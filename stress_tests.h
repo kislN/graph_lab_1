@@ -14,7 +14,7 @@ void stress_test1(){    /// test DFS with unsigned char type, N=1000, M=8N, 1000
         Graph<UC> G(N);
         G.generate_rand(p);
         vector<UI> bri;
-        find_dfs_bridges(G, bri);
+        DBS(G, bri);
         for (UI i = 0; i < bri.size(); i+=2) {
             count_fails += (!check_one_bridge(G, bri[i], bri[i+1]));
             count_all++;
@@ -36,7 +36,7 @@ void stress_test2(){    /// test rand with unsigned char type, N=1000, M=4N, 100
         Graph<UL> G(N);
         G.generate_rand(p);
 
-        UI all = find_rand_bridges(G);
+        RBS(G);
         vector<EDGE<UL>> &wei = G.get_edges_list();
         sort(wei.begin(), wei.end(), comp<UL>);
 
@@ -62,8 +62,8 @@ void stress_test2(){    /// test rand with unsigned char type, N=1000, M=4N, 100
                 bool flag = 1;
                 for (UI j=iter_bri; j<iter_bri+k; j++){
                     if (i!=j){
-                        if (check_double_bridge(G, wei[i].vertex_a, wei[i].vertex_b, wei[j].vertex_a,
-                                                wei[j].vertex_b)) {
+                        if (check_two_bridge(G, wei[i].vertex_a, wei[i].vertex_b, wei[j].vertex_a,
+                                             wei[j].vertex_b)) {
                             if (i>j) count_fails++;
                             flag = 0;
                             break;
@@ -78,7 +78,7 @@ void stress_test2(){    /// test rand with unsigned char type, N=1000, M=4N, 100
 
         }
 
-        cout << "fails = " << count_fails << " all = " << all << " del = " << float(count_fails)/all << endl;
+        cout << "fails = " << count_fails << " del = " << float(count_fails)<< endl;
     }
 
 };
@@ -91,7 +91,7 @@ void stress_test3(){    /// test rand with unsigned char type, N=1000, M=4N, 100
         Graph<UC> G(N);
         G.generate_rand(p);
 
-        UI all = find_rand_bridges(G);
+        RBS(G);
         vector<EDGE<UC>> &wei = G.get_edges_list();
         sort(wei.begin(), wei.end(), comp<UC>);
 
@@ -112,8 +112,9 @@ void stress_test3(){    /// test rand with unsigned char type, N=1000, M=4N, 100
             UI k = 1;
             if(iter_bri+k<len) {
                 while (wei[iter_bri].weight == wei[iter_bri + k].weight) {
-                    count_2_fails += (!check_double_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b, wei[iter_bri + k].vertex_a,
-                                                           wei[iter_bri+k].vertex_b));
+                    count_2_fails += (!check_two_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b,
+                                                        wei[iter_bri + k].vertex_a,
+                                                        wei[iter_bri + k].vertex_b));
                     k++;
                     count_2_all++;
                     if (iter_bri + k >= len) break;
@@ -136,7 +137,7 @@ void stress_test4(){    /// test rand with unsigned char type, N=1000, M=4N, 100
         Graph<bool> G(N);
         G.generate_rand(p);
 
-        UI all = find_rand_bridges(G);
+        RBS(G);
         vector<EDGE<bool>> &wei = G.get_edges_list();
         sort(wei.begin(), wei.end(), comp<bool>);
         UI edg_pairs = (G.get_edges_num()*(G.get_edges_num()-1))/2;
@@ -157,8 +158,9 @@ void stress_test4(){    /// test rand with unsigned char type, N=1000, M=4N, 100
             UI k = 1;
             if(iter_bri+k<len) {
                 while (wei[iter_bri].weight == wei[iter_bri + k].weight) {
-                    count_2_fails += (!check_double_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b, wei[iter_bri + k].vertex_a,
-                                                           wei[iter_bri+k].vertex_b));
+                    count_2_fails += (!check_two_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b,
+                                                        wei[iter_bri + k].vertex_a,
+                                                        wei[iter_bri + k].vertex_b));
                     k++;
                     count_2_all++;
                     if (iter_bri + k >= len) break;
@@ -188,7 +190,7 @@ void stress_test5(){    /// test rand with unsigned char type, N=1000, M=4N, 100
         Graph<bool> G(N);
         G.generate_rand(p);
 
-        find_rand_bridges(G);
+        RBS(G);
         vector<EDGE<bool>> &wei = G.get_edges_list();
         sort(wei.begin(), wei.end(), comp<bool>);
         edg_pairs += (G.get_edges_num()*(G.get_edges_num()-1))/2;
@@ -206,8 +208,9 @@ void stress_test5(){    /// test rand with unsigned char type, N=1000, M=4N, 100
             UI k = 1;
             if(iter_bri+k<len) {
                 while (wei[iter_bri].weight == wei[iter_bri + k].weight) {
-                    count_2_fails += (!check_double_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b, wei[iter_bri + k].vertex_a,
-                                                           wei[iter_bri+k].vertex_b));
+                    count_2_fails += (!check_two_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b,
+                                                        wei[iter_bri + k].vertex_a,
+                                                        wei[iter_bri + k].vertex_b));
                     k++;
                     count_2_all++;
                     if (iter_bri + k >= len) break;
@@ -231,7 +234,7 @@ void stress_test5(){    /// test rand with unsigned char type, N=1000, M=4N, 100
 //        float p = M / ((i * (i - 1)) / 2.);
 //        G.generate_rand(p);
 //        vector<UI> v;
-//        find_dfs_bridges(G, v);
+//        DBS(G, v);
 //        if(v.size()){
 //            for (UI k=0; k<v.size()-1; k+=2){
 //                if(!check_one_bridge(G, v[k], v[k+1])) {
@@ -260,7 +263,7 @@ void stress_test5(){    /// test rand with unsigned char type, N=1000, M=4N, 100
 //                UI k = 1;
 //                if (i+k < wei.size()) {
 //                    while (wei[i][2] == wei[i + k][2]) {
-//                        count_fails += (!check_double_bridge(G, wei[i][0], wei[i][1], wei[i + k][0], wei[i + k][1]));
+//                        count_fails += (!check_two_bridge(G, wei[i][0], wei[i][1], wei[i + k][0], wei[i + k][1]));
 //                        count_all++;
 //                        k++;
 //                        if (i+k >= wei.size()) break;
