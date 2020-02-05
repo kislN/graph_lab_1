@@ -2,282 +2,159 @@
 #define LAB1_GRAPHS_ALGO_STRESS_TESTS_H
 
 
-
-void stress_test1(){    /// test DFS with unsigned char type, N=1000, M=8N, 10000 iterations
-    UI N = 100;
-    UI M = 1000;
+/// Test DBS with N=1000, M=0, 10000 iterations.
+void stress_test1(ofstream &f, UI N, UI dens_index, UI iterations){
+    UI M;
+    switch(dens_index){
+        case 1:
+            M = 0;
+            break;
+        case 2:
+            M = N/2;
+            break;
+        case 3:
+            M = N;
+            break;
+        case 4:
+            M = N*2;
+            break;
+        case 5:
+            M = N*N;
+            break;
+    }
     UI count_fails = 0;
     UI count_all = 0;
+    UI edges_num = 0;
 
-    for (UI iter=0; iter<1000; iter++) {
-        float p = M/((N*(N-1))/2.);
-        Graph<UC> G(N);
-        G.generate_rand(p);
-        vector<UI> bri;
-        DBS(G, bri);
-        for (UI i = 0; i < bri.size(); i+=2) {
-            count_fails += (!check_one_bridge(G, bri[i], bri[i+1]));
+    for (UI iter=0; iter<iterations; iter++) {
+        float probabil = M/((N*(N-1))/2.);
+        Graph<US> G(N);
+        G.generate_rand(probabil);
+        edges_num += G.get_edges_num();
+        vector<UI> bridges;
+        DBS(G, bridges);
+        for (UI i = 0; i < bridges.size(); i+=2) {
+            count_fails += (!check_one_bridge(G, bridges[i], bridges[i+1]));
             count_all++;
         }
-        N++;
     }
-    cout << "fails = " << count_fails << " right = " << count_all - count_fails << " all = " << count_all << endl;
-
+    f << N << "," << edges_num/iterations << "," << iterations << "," << count_fails << "," << count_all - count_fails << "," << count_all << endl;
 
 };
 
+void stress_DBS(){
+    ofstream out_stress_DBS("../data/stress_DBS.csv");
+    out_stress_DBS << "NumVert,MeanNumEdges,Iterations,Wrong bridges,Right bridges,All bridges" << endl;
+    stress_test1(out_stress_DBS, 100, 1, 100);
+    stress_test1(out_stress_DBS, 100, 2, 100);
+    stress_test1(out_stress_DBS, 100, 3, 100);
+    stress_test1(out_stress_DBS, 100, 4, 100);
+    stress_test1(out_stress_DBS, 100, 5, 100);
+    out_stress_DBS.close();
+}
 
-
-void stress_test2(){    /// test rand with unsigned char type, N=1000, M=4N, 10000 iterations
-    UI N = 100;
-    UI M = N*4;
-    float p = M/((N*(N-1))/2.);
-    for (UI iter=0; iter<2; iter++) {
-        Graph<UL> G(N);
-        G.generate_rand(p);
-
-        RBS(G);
-        vector<EDGE<UL>> &wei = G.get_edges_list();
-        sort(wei.begin(), wei.end(), comp<UL>);
-
-        UI count_fails = 0;
-
-        UI len = wei.size();   /// it is necessary because &wei.size() changes after adding an edge
-        UI iter_bri = 0;
-        while(wei[iter_bri].weight==0){
-            count_fails += (!check_one_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b));
-            iter_bri++;
-        }
-
-        while(iter_bri<len){
-            UI blocks = 0;
-            UI k = 0;
-            /// Выделим блок ребер с одинаковыми весами
-            while (wei[iter_bri].weight == wei[iter_bri + k].weight) {
-                k++;
-                if (iter_bri + k >= len) break;
-            }
-            /// Протестируем каждую пару ребер из данного блока
-            for (UI i=iter_bri; i<iter_bri+k; i++){
-                bool flag = 1;
-                for (UI j=iter_bri; j<iter_bri+k; j++){
-                    if (i!=j){
-                        if (check_two_bridge(G, wei[i].vertex_a, wei[i].vertex_b, wei[j].vertex_a,
-                                             wei[j].vertex_b)) {
-                            if (i>j) count_fails++;
-                            flag = 0;
-                            break;
-                        }
-                    }
-                }
-                if (flag) count_fails++;
-            }
-
-            if (k == 1) count_fails--;
-            iter_bri+=k;
-
-        }
-
-        cout << "fails = " << count_fails << " del = " << float(count_fails)<< endl;
+template <typename T>
+void stress_test6(ofstream &f, UI N=100, UI dens_index=1, UI iterations=10, UI sort_index=1){    /// test rand with unsigned char type, N=1000, M=4N, 10000 iterations
+    vector<string> sorts{"std::sort", "radix", "bucket"};
+    UI M;
+    switch(dens_index){
+        case 1:
+            M = N/2;
+            break;
+        case 2:
+            M = N;
+            break;
+        case 3:
+            M = N*2;
+            break;
+        case 4:
+            M = N*4;
+            break;
+        case 5:
+            M = N*N;
+            break;
     }
 
-};
-
-void stress_test3(){    /// test rand with unsigned char type, N=1000, M=4N, 10000 iterations
-    UI N = 1000;
-    UI M = N*2;
-    float p = M/((N*(N-1))/2.);
-    for (UI iter=0; iter<10; iter++) {
-        Graph<UC> G(N);
-        G.generate_rand(p);
-
-        RBS(G);
-        vector<EDGE<UC>> &wei = G.get_edges_list();
-        sort(wei.begin(), wei.end(), comp<UC>);
-
-        UI count_1_fails = 0;
-        UI count_2_fails = 0;
-        UI count_1_all = 0;
-        UI count_2_all = 0;
-        UI fails = 0;
-        UI len = wei.size();   /// it is necessary because &wei.size() changes after adding an edge
-        UI iter_bri = 0;
-        while(wei[iter_bri].weight==0){
-            count_1_fails += (!check_one_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b));
-            iter_bri++;
-            count_1_all++;
-        }
-
-        while(iter_bri<len){
-            UI k = 1;
-            if(iter_bri+k<len) {
-                while (wei[iter_bri].weight == wei[iter_bri + k].weight) {
-                    count_2_fails += (!check_two_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b,
-                                                        wei[iter_bri + k].vertex_a,
-                                                        wei[iter_bri + k].vertex_b));
-                    k++;
-                    count_2_all++;
-                    if (iter_bri + k >= len) break;
-                }
-            }
-            iter_bri++;
-        }
-        cout << count_1_fails+count_2_fails << endl;
-        cout << "fails 1 = " << count_1_fails << " all 1 = " << count_1_all << " fails 2 = " << count_2_fails << " all 2 = " << count_2_all << " del = " << float(count_1_fails+count_2_fails)/(count_1_all+count_2_all) << endl;
-    }
-
-};
-
-
-void stress_test4(){    /// test rand with unsigned char type, N=1000, M=4N, 10000 iterations
-    UI N = 10;
-    UI M = N*2;
-    float p = M/((N*(N-1))/2.);
-    for (UI iter=0; iter<10; iter++) {
-        Graph<bool> G(N);
-        G.generate_rand(p);
-
-        RBS(G);
-        vector<EDGE<bool>> &wei = G.get_edges_list();
-        sort(wei.begin(), wei.end(), comp<bool>);
-        UI edg_pairs = (G.get_edges_num()*(G.get_edges_num()-1))/2;
-        UI count_1_fails = 0;
-        UI count_2_fails = 0;
-        UI count_1_all = 0;
-        UI count_2_all = 0;
-        UI fails = 0;
-        UI len = wei.size();   /// it is necessary because &wei.size() changes after adding an edge
-        UI iter_bri = 0;
-        while(wei[iter_bri].weight==0){
-//            count_1_fails += (!check_one_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b));
-            iter_bri++;
-//            count_1_all++;
-        }
-
-        while(iter_bri<len){
-            UI k = 1;
-            if(iter_bri+k<len) {
-                while (wei[iter_bri].weight == wei[iter_bri + k].weight) {
-                    count_2_fails += (!check_two_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b,
-                                                        wei[iter_bri + k].vertex_a,
-                                                        wei[iter_bri + k].vertex_b));
-                    k++;
-                    count_2_all++;
-                    if (iter_bri + k >= len) break;
-                }
-            }
-            iter_bri++;
-        }
-
-        cout << float(count_2_fails)/(edg_pairs-(count_2_all-count_2_fails)) << endl;
-        cout << "fails 1 = " << count_1_fails << " all 1 = " << count_1_all << " fails 2 = " << count_2_fails << " all 2 = " << count_2_all << " del = " << float(count_1_fails+count_2_fails)/(count_1_all+count_2_all) << endl;
-    }
-
-};
-
-
-void stress_test5(){    /// test rand with unsigned char type, N=1000, M=4N, 10000 iterations
-    UI N = 10;
-    UI M = N*2;
-    float p = M/((N*(N-1))/2.);
-    UI count_2_fails = 0;
-    UI count_2_all = 0;
-    UI count_1_fails = 0;
-    UI count_1_all = 0;
+    float probabil = M/((N*(N-1))/2.);
+    UI one_bridge_fails = 0;
+    UI one_bridge_all = 0;
+    UI two_bridge_fails = 0;
+    UI two_bridges_all = 0;
+    UI edges_num = 0;
     UI edg_pairs = 0;
-    UI edg = 0;
-    for (UI iter=0; iter<100; iter++) {
-        Graph<bool> G(N);
-        G.generate_rand(p);
+
+    for (UI iter=0; iter<iterations; iter++) {
+        Graph<T> G(N);
+        G.generate_rand(probabil);
+        edges_num += G.get_edges_num();
+        edg_pairs += (G.get_edges_num()*(G.get_edges_num()-1))/2;
 
         RBS(G);
-        vector<EDGE<bool>> &wei = G.get_edges_list();
-        sort(wei.begin(), wei.end(), comp<bool>);
-        edg_pairs += (G.get_edges_num()*(G.get_edges_num()-1))/2;
-        edg += G.get_edges_num();
-
-        UI len = wei.size();   /// it is necessary because &wei.size() changes after adding an edge
-        UI iter_bri = 0;
-        while(wei[iter_bri].weight==0){
-            count_1_fails += (!check_one_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b));
-            iter_bri++;
-            count_1_all++;
+        vector<EDGE<T>> &wei = G.get_edges_list();
+        switch(sort_index){
+            case 1:
+                sort(wei.begin(), wei.end(), comp<T>);
+                break;
+            case 2:
+                radix_sort(wei);
+                break;
+            case 3:
+                bucket_sort(wei, wei.size() / 20 + 1);
+                break;
         }
 
+
+        UI len = wei.size();   /// It is necessary because &wei.size() changes after adding an edge.
+        UI iter_bri = 0;
+        while(wei[iter_bri].weight==0){
+            one_bridge_fails += (!check_one_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b));
+            one_bridge_all++;
+            iter_bri++;
+        }
         while(iter_bri<len){
-            UI k = 1;
-            if(iter_bri+k<len) {
-                while (wei[iter_bri].weight == wei[iter_bri + k].weight) {
-                    count_2_fails += (!check_two_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b,
-                                                        wei[iter_bri + k].vertex_a,
-                                                        wei[iter_bri + k].vertex_b));
-                    k++;
-                    count_2_all++;
-                    if (iter_bri + k >= len) break;
+            UI range = 1;
+            if(iter_bri+range<len) {
+                while (wei[iter_bri].weight == wei[iter_bri + range].weight) {
+                    two_bridge_fails += (!check_two_bridge(G, wei[iter_bri].vertex_a, wei[iter_bri].vertex_b,
+                                                        wei[iter_bri + range].vertex_a,
+                                                        wei[iter_bri + range].vertex_b));
+                    two_bridges_all++;
+                    range++;
+                    if (iter_bri + range >= len) break;
                 }
             }
             iter_bri++;
         }
-
-
     }
-    cout << float(count_2_fails)/(edg_pairs-(count_2_all - count_2_fails)) << endl;
-    cout << float(count_1_fails)/(edg-(count_1_all - count_1_fails)) << endl;
-    cout << (float(count_2_fails)/(edg_pairs-(count_2_all - count_2_fails)) + float(count_1_fails)/(edg-(count_1_all - count_1_fails))) / 2<< endl;
+
+    f << N << "," << edges_num/iterations << "," << iterations << "," << sorts[sort_index-1] << "," << sizeof(T)*8 << ","
+    << one_bridge_fails << "," << one_bridge_all - one_bridge_fails << "," << two_bridge_fails << "," << two_bridges_all - two_bridge_fails
+    << "," << float(one_bridge_fails)/(edges_num - (one_bridge_all - one_bridge_fails)) << ","
+    << float(two_bridge_fails)/(edg_pairs - (two_bridges_all - two_bridge_fails)) << "," << pow(0.5, sizeof(T)*8) << endl;
 
 };
 
-//bool stress_for_dfs(){
-//    for (UI i=3; i<=1000; i++){
-//        Graph G(i);
-//        UI M = i;
-//        float p = M / ((i * (i - 1)) / 2.);
-//        G.generate_rand(p);
-//        vector<UI> v;
-//        DBS(G, v);
-//        if(v.size()){
-//            for (UI k=0; k<v.size()-1; k+=2){
-//                if(!check_one_bridge(G, v[k], v[k+1])) {
-//                    return 0;
-//                }
-//            }
-//        }
-//    }
-//    return 1;
-//}
-//
-//float stress_for_rand(){
-//    UI count_fails = 0;
-//    UI count_all = 0;
-//    for (UI i=3; i<=1000; i++){
-//        Graph G(i);
-//        UI M = i;
-//        float p = M / ((i * (i - 1)) / 2.);
-//        G.generate_rand(p);
-////        find_rand_bridges(G);
-//        vector<vector<UI>> wei = G.get_edges_list();
-//        radix_sort(wei);
-//
-//        for (UI i=0; i<wei.size(); i++){
-//            if(wei[i][2]!=0) {
-//                UI k = 1;
-//                if (i+k < wei.size()) {
-//                    while (wei[i][2] == wei[i + k][2]) {
-//                        count_fails += (!check_two_bridge(G, wei[i][0], wei[i][1], wei[i + k][0], wei[i + k][1]));
-//                        count_all++;
-//                        k++;
-//                        if (i+k >= wei.size()) break;
-//
-//                    }
-//                }
-//            }
-//            else{
-//                count_fails += (!check_one_bridge(G, wei[i][0], wei[i][1]));
-//                count_all++;
-//            }
-//        }
-//    }
-//    return count_fails/count_all;
-//}
+
+void stress_RBS(){
+    ofstream out_stress_RBS("../data/stress_RBS.csv");
+    out_stress_RBS << "NumVert,MeanNumEdg,Iter,Sort,Type(bits),Wrong 1-br,Right 1-br,Wrong 2-br,"
+                      "Right 2-br,Wrong 1-br/(NumEdg-Right 1-br),Wrong 2-br/(All pairs-Right 2-br),1/2^bits"
+                       << endl;
+    stress_test6<UC>(out_stress_RBS, 10, 2, 10, 1);
+    stress_test6<UC>(out_stress_RBS, 10, 2, 10, 2);
+    stress_test6<UC>(out_stress_RBS, 10, 4, 10, 3);
+    stress_test6<US>(out_stress_RBS, 10, 2, 10, 1);
+    stress_test6<US>(out_stress_RBS, 10, 4, 10, 2);
+    stress_test6<US>(out_stress_RBS, 10, 4, 10, 3);
+    stress_test6<UI>(out_stress_RBS, 10, 2, 10, 1);
+    stress_test6<UI>(out_stress_RBS, 10, 4, 10, 2);
+    stress_test6<UI>(out_stress_RBS, 10, 4, 10, 3);
+    stress_test6<UL>(out_stress_RBS, 10, 2, 10, 1);
+    stress_test6<UL>(out_stress_RBS, 10, 4, 10, 2);
+    stress_test6<UL>(out_stress_RBS, 10, 4, 10, 3);
+    out_stress_RBS.close();
+}
+
+
 
 #endif //LAB1_GRAPHS_ALGO_STRESS_TESTS_H

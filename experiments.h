@@ -4,7 +4,7 @@
 
 
 template <typename T>
-void experim(ofstream &f, UI iter, UI step, UI aver, UI power, UI coef){
+void experiment(ofstream &f, UI iter, UI step, UI aver, UI power, UI coef){
     UI N = 0;
     for (UI i=0; i<iter; i++){    //loop for N (10-1000)
 
@@ -42,13 +42,14 @@ void experim(ofstream &f, UI iter, UI step, UI aver, UI power, UI coef){
             time_sort += (clock() - start_time) + time_rand;
         }
 
-        f << N << "," << M << ","<< time_dfs / aver*1000000.0 << "," << time_rand / aver*1000000.0 << "," << time_radix / aver*1000000.0 << "," << time_bucket / aver*1000000.0 << "," << time_sort / aver*1000000.0 <<  endl;
+        f << N << "," << M << ","<< time_dfs / aver*1000000.0 << "," << time_rand / aver*1000000.0 << ","
+        << time_radix / aver*1000000.0 << "," << time_bucket / aver*1000000.0 << "," << time_sort / aver*1000000.0 << endl;
         N += step;
     }
 }
 
 template <typename T>
-bool do_experim(string file_name, UI iter, UI step, UI aver){
+bool do_experiment(string file_name, UI iter, UI step, UI aver){
     ofstream out(file_name);
     if (!out.is_open()) return 0;
     cout << "File is open " << endl;
@@ -57,10 +58,17 @@ bool do_experim(string file_name, UI iter, UI step, UI aver){
     /// Vector coef is necessary for edges amount (M=N/2, M=N, M=8N, M=(N/2)^2)
 
     for (UI i=0; i<coef.size(); i++) {
-        experim<T>(out, iter, step, aver, coef[i].first, coef[i].second);
+        experiment<T>(out, iter, step, aver, coef[i].first, coef[i].second);
     }
     out.close();
     return 1;
+}
+
+void all_experiments() {
+    do_experiment<UC>("../data/Out_8b.csv", 21, 500, 3);
+    do_experiment<US>("../data/Out_16b.csv", 21, 500, 3);
+    do_experiment<UI>("../data/Out_32b.csv", 21, 500, 3);
+    do_experiment<UL>("../data/Out_64b.csv", 21, 500, 3);
 }
 
 #endif //LAB1_GRAPHS_ALGO_EXPERIMENTS_H
